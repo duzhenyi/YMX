@@ -1,4 +1,8 @@
 ﻿using D.YMX.Models;
+using Org.BouncyCastle.Asn1.Ocsp;
+using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Crypto.Tls;
+using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,16 +10,23 @@ using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Security;
+using System.Net.Sockets;
+using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Serialization.Json;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Net.WebRequestMethods;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace D.YMX.Utils
 {
     public class ProxyObj
     {
-
         public bool success { get; set; }
 
         public List<Proxy> result { get; set; }
@@ -34,9 +45,7 @@ namespace D.YMX.Utils
         const string proxyusernm = "15680505585";
         //后台密码
         const string proxypasswd = "15680505585";
-
-
-        public static Proxy GetIp()
+        private static Proxy GetProxyIp()
         {
             WebClient wc = new WebClient();
             string body = wc.DownloadString(proxyAPI);
@@ -58,50 +67,131 @@ namespace D.YMX.Utils
             throw new Exception("获取代理IP失败");
         }
 
-
-
         public static async Task<string> GetHtmlAsync(string url, bool openProxy = false)
         {
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
-
-            request.Method = "GET";
-            request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
-            request.ContentType = "application/json;charset=UTF-8";
-            request.KeepAlive = true;
-            request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64";
-            request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");//定义gzip压缩页面支持
-
-            // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
-            //httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
-
             // 设置ja3指纹
-            request.Headers.Add("tls-ja3", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,17513-10-18-11-51-13-27-0-35-65281-43-16-45-5-23-21,29-23-24,0");
+            //request.Headers.Add("tls-ja3", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,17513-10-18-11-51-13-27-0-35-65281-43-16-45-5-23-21,29-23-24,0");
             // 设置ja3proxy执行请求的超时
-            request.Headers.Add("tls-timeout", "10");
+            //request.Headers.Add("tls-timeout", "10");
             // 设置ja3proxy执行请求用代理，设置后请求目标服务器拿到的就是代理ip
             // client2.DefaultRequestHeaders.Add("tls-proxy","http://252.45.26.333:5543");
-
-            //request.ContentType = "text/html;charset=UTF-8";
-            //request.Headers.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
-            //request.Headers.Add("Accept-Encoding", "gzip, deflate, br");
-            //request.Headers.Add("Accept-Language", "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
-            //request.Headers.Add("downlink", "10");
-            //request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64");
+            var fingerprint = Generate("www.amazon.com", 443);
+            var handler = new HttpClientHandler()
+            {
+                MaxConnectionsPerServer = int.MaxValue,
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
+                //ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+                //{
+                //    // 检查证书指纹是否匹配
+                //    var actualFingerprint = cert.GetCertHashString();
+                //    if (fingerprint.Equals(actualFingerprint, StringComparison.OrdinalIgnoreCase))
+                //    {
+                //        return true;
+                //    }
+                //    else
+                //    {
+                //        return false;
+                //    }
+                //}
+                // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
 
             if (openProxy)
             {
-                Proxy p = GetIp();
-                request.Proxy = new WebProxy(p.ip, p.port);
-                request.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+                Proxy p = GetProxyIp();
+
+                handler.UseProxy = true;
+                handler.Proxy = new WebProxy(p.ip, p.port);
+                handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
             }
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-            Stream myResponseStream = response.GetResponseStream();
-            StreamReader myStreamReader = new StreamReader(myResponseStream);
-            string retString = await myStreamReader.ReadToEndAsync();
-            myStreamReader.Close();
-            myResponseStream.Close();
-            return retString;
+
+            var client = new HttpClient(handler);
+            client.Timeout = TimeSpan.FromSeconds(20);
+            client.DefaultRequestVersion = new Version(2, 0);
+
+            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"));//"text/html;charset=UTF-8";
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64");
+            client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
+            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
+
+            var response = await client.GetAsync(url);
+            if (response.StatusCode == HttpStatusCode.OK)
+            { 
+                Stream myResponseStream = await response.Content.ReadAsStreamAsync();
+                StreamReader myStreamReader = new StreamReader(myResponseStream);
+                string retString = await myStreamReader.ReadToEndAsync();
+                myStreamReader.Close();
+                myResponseStream.Close();
+                return retString;
+            }
+            return null;
         }
+
+        public static string Generate(string hostname, int port)
+        {
+            using (var client = new TcpClient(hostname, port))
+            using (var stream = client.GetStream())
+            using (var sslStream = new SslStream(stream))
+            {
+                sslStream.AuthenticateAsClient(hostname);
+
+                var cert = sslStream.RemoteCertificate as X509Certificate2;
+                if (cert == null)
+                {
+                    throw new Exception("Failed to get remote certificate.");
+                }
+                var md5 = cert.GetCertHashString();
+                return md5;
+                //var sha256 = cert.GetCertHashString(System.Security.Cryptography.HashAlgorithmName.SHA256);
+                //return sha256.Replace(" ", "").ToLower();
+            }
+        }
+
+
+        //public static async Task<string> GetHtml(string domain, string url, bool openProxy = false)
+        //{
+        //    HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+        //    // 谷歌 m,a,s,p
+        //    request.Method = "GET";
+        //    request.Headers.Add(":authority", domain);
+        //    request.Headers.Add(":scheme", "https");
+        //    request.Headers.Add("path", url);
+
+        //    request.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7";
+        //    request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br");//定义gzip压缩页面支持
+        //    request.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
+        //    //cache-control:max-age=0
+
+        //    request.ContentType = "application/json;charset=UTF-8"; //"text/html;charset=UTF-8";
+        //    request.KeepAlive = true;
+        //    request.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64";
+
+        //    // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
+        //    //httpClientHandler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+
+        //    // 设置ja3指纹
+        //    request.Headers.Add("tls-ja3", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,17513-10-18-11-51-13-27-0-35-65281-43-16-45-5-23-21,29-23-24,0");
+        //    // 设置ja3proxy执行请求的超时
+        //    request.Headers.Add("tls-timeout", "10");
+        //    // 设置ja3proxy执行请求用代理，设置后请求目标服务器拿到的就是代理ip
+        //    // client2.DefaultRequestHeaders.Add("tls-proxy","http://252.45.26.333:5543");
+
+        //    if (openProxy)
+        //    {
+        //        Proxy p = GetProxyIp();
+        //        request.Proxy = new WebProxy(p.ip, p.port);
+        //        request.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+        //    }
+        //    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+        //    Stream myResponseStream = response.GetResponseStream();
+        //    StreamReader myStreamReader = new StreamReader(myResponseStream);
+        //    string retString = await myStreamReader.ReadToEndAsync();
+        //    myStreamReader.Close();
+        //    myResponseStream.Close();
+        //    return retString;
+        //}
 
         /// <summary>
         /// 异步创建爬
@@ -141,13 +231,13 @@ namespace D.YMX.Utils
                     request.Headers.Add("downlink", "10");
                     request.Headers.Add(HttpRequestHeader.AcceptEncoding, "gzip, deflate, br"); //"gzip,deflate");//定义gzip压缩页面支持
                     request.Headers.Add(HttpRequestHeader.AcceptLanguage, "zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
-                     
+
                     request.Timeout = 5000;//定义请求超时时间为5秒
                     request.KeepAlive = true;//启用长连接
                     request.Method = "GET";//定义请求方式为GET              
                     if (openProxy)
                     {
-                        Proxy p = GetIp();
+                        Proxy p = GetProxyIp();
                         var px = new WebProxy(p.ip, p.port);//设置代理服务器IP，伪装请求地址
                         px.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
                         request.Proxy = px;

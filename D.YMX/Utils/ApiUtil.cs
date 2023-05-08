@@ -22,7 +22,7 @@ namespace D.YMX.Utils
                 // 1. 拼接搜索页面
                 var url = countryEntity.KeywordsUrl.Replace("{QID}", DateTime.Now.Ticks.ToString()).Replace("{KEY_WORDS}", HttpUtility.UrlEncode(keyWords)).Replace("{PAGE}", "1");
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(countryEntity.Domain, url, true);
+                var res = await HttpUtil.GetHtmlAsync(url, false);
                 if (!string.IsNullOrEmpty(res))
                 {
                     // 解析Html
