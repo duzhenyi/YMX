@@ -413,21 +413,21 @@ namespace D.YMX
             List<Task<List<string>>> tasks = new List<Task<List<string>>>();
             for (int i = 0; i < asins.Count; i++)
             {
-                var asin = asins[i];
-                tasks.Add(ApiUtil.GetAllAsins(yaMaXunCountry, asin));
+                //var asin = asins[i];
+                //tasks.Add(ApiUtil.GetAllAsins(yaMaXunCountry, asin));
 
-                //var colorAsins = await GetAllAsins(yaMaXunCountry, asins[i]);
-                //if (colorAsins != null)
-                //{
-                //    allAsins.AddRange(colorAsins);
-                //}
-                //else
-                //{
-                //    allAsins.Add(asins[i]);
-                //}
+                var colorAsins = await ApiUtil.GetAllAsins(yaMaXunCountry, asins[i]);
+                if (colorAsins != null)
+                {
+                    allAsins.AddRange(colorAsins);
+                }
+                else
+                {
+                    allAsins.Add(asins[i]);
+                }
             }
 
-            await Task.WhenAll(tasks);
+            //await Task.WhenAll(tasks);
 
             // 采集产品详情
             var list = new List<Product>();

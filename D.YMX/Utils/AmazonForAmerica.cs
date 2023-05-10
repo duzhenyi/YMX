@@ -20,7 +20,7 @@ namespace D.YMX.Utils
         /// <returns></returns>
         public int GetTotalPage(HtmlAgilityPack.HtmlDocument doc)
         {
-            var pageNode = doc.DocumentNode.SelectSingleNode("//ul[@class='a-pagination']/li[@class='a-normal']/a[1]");
+            var pageNode = doc.DocumentNode.SelectSingleNode("//span[@class='s-pagination-item s-pagination-disabled']");
             if (pageNode != null)
             {
                 return int.Parse(pageNode.InnerText);
@@ -37,10 +37,10 @@ namespace D.YMX.Utils
         public List<string> GetAsinByList(HtmlAgilityPack.HtmlDocument doc)
         {
             var list = new List<string>();
-            var productNodes = doc.DocumentNode.SelectNodes("//div[@id='gridItemRoot']/div[1]/div[@class='zg-grid-general-faceout']/div");
+            var productNodes = doc.DocumentNode.SelectNodes("//div[@data-component-type='s-search-result']");
             foreach (var productNode in productNodes)
             {
-                list.Add(productNode.Attributes["id"].Value);
+                list.Add(productNode.Attributes["data-asin"].Value);
             }
             return list;
         }

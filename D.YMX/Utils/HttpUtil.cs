@@ -97,14 +97,14 @@ namespace D.YMX.Utils
                 //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 
-            //if (openProxy)
-            //{
-            //    Proxy p = GetProxyIp();
+            if (openProxy)
+            {
+                Proxy p = GetProxyIp();
 
-            //    handler.UseProxy = true;
-            //    handler.Proxy = new WebProxy(p.ip, p.port);
-            //    handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
-            //}
+                handler.UseProxy = true;
+                handler.Proxy = new WebProxy(p.ip, p.port);
+                handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+            }
 
             var client = new HttpClient(handler);
             client.Timeout = TimeSpan.FromSeconds(20);
@@ -116,7 +116,7 @@ namespace D.YMX.Utils
             client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
 
             var response = await client.GetAsync(url);
-            if (response.StatusCode == HttpStatusCode.OK)
+           if (response.StatusCode == HttpStatusCode.OK)
             {
                 Stream myResponseStream = await response.Content.ReadAsStreamAsync();
                 StreamReader myStreamReader = new StreamReader(myResponseStream);

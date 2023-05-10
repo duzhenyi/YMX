@@ -22,7 +22,7 @@ namespace D.YMX.Utils
                 // 1. 拼接搜索页面
                 var url = countryEntity.KeywordsUrl.Replace("{QID}", DateTime.Now.Ticks.ToString()).Replace("{KEY_WORDS}", HttpUtility.UrlEncode(keyWords)).Replace("{PAGE}", "1");
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(url, false);
+                var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
                     // 解析Html
@@ -52,7 +52,7 @@ namespace D.YMX.Utils
                 var url = countryEntity.KeywordsUrl.Replace("{QID}", DateTime.Now.Ticks.ToString()).Replace("{KEY_WORDS}", HttpUtility.UrlEncode(keyWords)).Replace("{PAGE}", page);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(countryEntity.Domain, url);
+                var res = await HttpUtil.GetHtmlAsync(url, true);
 
                 // 3. 解析Html
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
@@ -86,9 +86,13 @@ namespace D.YMX.Utils
                 var url = countryEntity.DetailUrl.Replace("{ASIN}", asin);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(countryEntity.Domain, url);
+                var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
+                    if (res.Contains("Enter the characters you see below"))
+                    {// 需要输入验证码，重新请求
+                        return await GetAllAsins(countryEntity, asin);
+                    }
                     return countryEntity.Instance().GetAllAsins(res);
                 }
             }
@@ -113,7 +117,7 @@ namespace D.YMX.Utils
                 var url = countryEntity.DetailUrl.Replace("{ASIN}", asin);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(countryEntity.Domain, url);
+                var res = await HttpUtil.GetHtmlAsync(url, true);
 
                 if (!string.IsNullOrEmpty(res))
                 {
