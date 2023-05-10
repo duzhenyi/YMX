@@ -69,18 +69,17 @@ namespace D.YMX.Utils
 
         public static async Task<string> GetHtmlAsync(string url, bool openProxy = false)
         {
-            // 设置ja3指纹
-            //request.Headers.Add("tls-ja3", "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,17513-10-18-11-51-13-27-0-35-65281-43-16-45-5-23-21,29-23-24,0");
-            // 设置ja3proxy执行请求的超时
-            //request.Headers.Add("tls-timeout", "10");
-            // 设置ja3proxy执行请求用代理，设置后请求目标服务器拿到的就是代理ip
-            // client2.DefaultRequestHeaders.Add("tls-proxy","http://252.45.26.333:5543");
-            var fingerprint = Generate("www.amazon.com", 443);
+            //var fingerprint = Generate("www.amazon.com", 443);
+
             var handler = new HttpClientHandler()
             {
+                ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true,
                 MaxConnectionsPerServer = int.MaxValue,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                SslProtocols = System.Security.Authentication.SslProtocols.Tls12 | System.Security.Authentication.SslProtocols.Tls13,
+                SslProtocols = System.Security.Authentication.SslProtocols.Tls |
+                               System.Security.Authentication.SslProtocols.Tls11 | 
+                               System.Security.Authentication.SslProtocols.Tls12 | 
+                               System.Security.Authentication.SslProtocols.Tls13,
                 //ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
                 //{
                 //    // 检查证书指纹是否匹配
@@ -95,17 +94,17 @@ namespace D.YMX.Utils
                 //    }
                 //}
                 // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
-                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 
-            if (openProxy)
-            {
-                Proxy p = GetProxyIp();
+            //if (openProxy)
+            //{
+            //    Proxy p = GetProxyIp();
 
-                handler.UseProxy = true;
-                handler.Proxy = new WebProxy(p.ip, p.port);
-                handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
-            }
+            //    handler.UseProxy = true;
+            //    handler.Proxy = new WebProxy(p.ip, p.port);
+            //    handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+            //}
 
             var client = new HttpClient(handler);
             client.Timeout = TimeSpan.FromSeconds(20);
@@ -118,7 +117,7 @@ namespace D.YMX.Utils
 
             var response = await client.GetAsync(url);
             if (response.StatusCode == HttpStatusCode.OK)
-            { 
+            {
                 Stream myResponseStream = await response.Content.ReadAsStreamAsync();
                 StreamReader myStreamReader = new StreamReader(myResponseStream);
                 string retString = await myStreamReader.ReadToEndAsync();
