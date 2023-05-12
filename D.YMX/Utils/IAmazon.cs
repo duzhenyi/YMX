@@ -33,5 +33,12 @@ namespace D.YMX.Utils
         /// <param name="detailHtml"></param>
         /// <returns></returns>
         Product GetDetail(string detailHtml);
+
+        /// <summary>
+        /// 获取验证码
+        /// </summary>
+        /// <param name="detailHtml"></param>
+        /// <returns></returns>
+        string GetCaptcha(string detailHtml);
     }
 }

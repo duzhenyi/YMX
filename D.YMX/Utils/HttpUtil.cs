@@ -77,8 +77,8 @@ namespace D.YMX.Utils
                 MaxConnectionsPerServer = int.MaxValue,
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 SslProtocols = System.Security.Authentication.SslProtocols.Tls |
-                               System.Security.Authentication.SslProtocols.Tls11 | 
-                               System.Security.Authentication.SslProtocols.Tls12 | 
+                               System.Security.Authentication.SslProtocols.Tls11 |
+                               System.Security.Authentication.SslProtocols.Tls12 |
                                System.Security.Authentication.SslProtocols.Tls13,
                 //ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
                 //{
@@ -107,7 +107,7 @@ namespace D.YMX.Utils
             }
 
             var client = new HttpClient(handler);
-            client.Timeout = TimeSpan.FromSeconds(20);
+            client.Timeout = TimeSpan.FromSeconds(60);
             client.DefaultRequestVersion = new Version(2, 0);
 
             //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"));//"text/html;charset=UTF-8";
@@ -115,17 +115,18 @@ namespace D.YMX.Utils
             client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
             client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
 
-            var response = await client.GetAsync(url);
-           if (response.StatusCode == HttpStatusCode.OK)
-            {
-                Stream myResponseStream = await response.Content.ReadAsStreamAsync();
-                StreamReader myStreamReader = new StreamReader(myResponseStream);
-                string retString = await myStreamReader.ReadToEndAsync();
-                myStreamReader.Close();
-                myResponseStream.Close();
-                return retString;
-            }
-            return null;
+            var response = await client.GetStringAsync(url);
+
+            //if (response.StatusCode == HttpStatusCode.OK)
+            //{
+            //    Stream myResponseStream = await response.Content.ReadAsStreamAsync();
+            //    StreamReader myStreamReader = new StreamReader(myResponseStream);
+            //    string retString = await myStreamReader.ReadToEndAsync();
+            //    myStreamReader.Close();
+            //    myResponseStream.Close();
+            //    return retString;
+            //}
+            return response;
         }
 
         public static string Generate(string hostname, int port)

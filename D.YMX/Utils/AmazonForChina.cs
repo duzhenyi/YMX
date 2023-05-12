@@ -317,6 +317,11 @@ namespace D.YMX.Utils
 
         }
 
+        public string GetCaptcha(string detailHtml)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
     }
 }

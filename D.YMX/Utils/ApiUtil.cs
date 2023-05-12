@@ -91,6 +91,21 @@ namespace D.YMX.Utils
                 {
                     if (res.Contains("Enter the characters you see below"))
                     {// 需要输入验证码，重新请求
+
+                        // 获取验证码  url = validateCaptcha?amzn=Rth+q2/q0PFHYp/RpglARg==&amzn-r=/dp/B0BWZW448X?th=1&psc=1&field-keywords=验证码
+                        var captchaImgUrl = countryEntity.Instance().GetCaptcha(res);
+                        // 存储到本地
+                        var localCaptchaImgUrl = ImgUtil.GetCaptchaImage(captchaImgUrl);
+                        // 图片切分
+
+                        // 图片二值化
+                        Bitmap bitmap = new Bitmap(localCaptchaImgUrl);
+                        if (bitmap != null)
+                        {
+
+                        }
+                        // 根据字模，算出跟哪个最相近
+
                         return await GetAllAsins(countryEntity, asin);
                     }
                     return countryEntity.Instance().GetAllAsins(res);

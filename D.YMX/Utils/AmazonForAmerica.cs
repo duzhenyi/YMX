@@ -1,6 +1,7 @@
 ﻿using D.YMX.Models;
 using HtmlAgilityPack;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.Arm;
 using System.Text.RegularExpressions;
 
 namespace D.YMX.Utils
@@ -87,6 +88,24 @@ namespace D.YMX.Utils
             return null;
         }
 
+        /// <summary>
+        /// 获取验证码
+        /// https://images-na.ssl-images-amazon.com/captcha/tinytuux/Captcha_ajrcrcceni.jpg
+        /// </summary>
+        /// <param name="detailHtml"></param>
+        /// <returns></returns>
+        public string GetCaptcha(string detailHtml)
+        {
+            HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(detailHtml);
+
+            var imgNode = doc.DocumentNode.SelectSingleNode("//div[@class='a-row a-text-center']/img[1]");
+            if (imgNode != null)
+            { 
+                return imgNode.Attributes["src"].Value;  
+            }
+            return null;
+        }
         #endregion
 
         #region 商品详情页面
@@ -182,6 +201,7 @@ namespace D.YMX.Utils
             return product;
 
         }
+
 
         #endregion
     }
