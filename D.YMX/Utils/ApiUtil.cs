@@ -102,7 +102,7 @@ namespace D.YMX.Utils
                         Bitmap bitmap = new Bitmap(localCaptchaImgUrl);
                         if (bitmap != null)
                         {
-
+                             
                         }
                         // 根据字模，算出跟哪个最相近
 

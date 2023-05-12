@@ -322,7 +322,7 @@ namespace D.YMX
                 });
             }
 
-            this.tabKeywords.Text = "chairs";
+            this.cboProdKeyWords.Text = "chairs";
         }
         private static List<Tuple<string, string>> columnArry = new List<Tuple<string, string>>()
         {
