@@ -42,10 +42,10 @@ namespace D.YMX.Utils
         //API链接  在后台获取
         const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=false&norepeat=false&detail=false&ltime=&idshow=false";
         //后台用户名
-        const string proxyusernm = "15680505585";
+        public const string proxyusernm = "15680505585";
         //后台密码
-        const string proxypasswd = "15680505585";
-        private static Proxy GetProxyIp()
+        public const string proxypasswd = "15680505585";
+        public static Proxy GetProxyIp()
         {
             WebClient wc = new WebClient();
             string body = wc.DownloadString(proxyAPI);
@@ -65,6 +65,29 @@ namespace D.YMX.Utils
                 return po.result[0];
             }
             throw new Exception("获取代理IP失败");
+        }
+
+
+        public static byte[] GetBytesFromUrl(string url)
+        {
+            byte[] b;
+            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
+
+            Proxy p = HttpUtil.GetProxyIp();
+            myReq.Proxy = new WebProxy(p.ip, p.port);
+            myReq.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+
+
+            WebResponse myResp = myReq.GetResponse();
+
+            Stream stream = myResp.GetResponseStream();
+            using (BinaryReader br = new BinaryReader(stream))
+            {
+                b = br.ReadBytes(500000);
+                br.Close();
+            }
+            myResp.Close();
+            return b;
         }
 
         public static async Task<string> GetHtmlAsync(string url, bool openProxy = false)

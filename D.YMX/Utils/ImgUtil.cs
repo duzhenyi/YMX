@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using D.YMX.Models;
+using System.Collections;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
@@ -111,7 +113,7 @@ namespace D.YMX.Utils
             "A","B","C","D","E","F","G","H","I","J",
             "K","L","M","N","O","P","Q","R","S","T",
             "U","V","W","X","Y","Z"
-        }; 
+        };
     }
 
     public class ImgUtil
@@ -128,25 +130,10 @@ namespace D.YMX.Utils
                 Directory.CreateDirectory(pathFile);
             }
             pathFile += $@"{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.jpg";
-            WriteBytesToFile(pathFile, GetBytesFromUrl(imgUrl));
+            WriteBytesToFile(pathFile, HttpUtil.GetBytesFromUrl(imgUrl));
             return pathFile;
         }
 
-        private static byte[] GetBytesFromUrl(string url)
-        {
-            byte[] b;
-            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
-            WebResponse myResp = myReq.GetResponse();
-
-            Stream stream = myResp.GetResponseStream();
-            using (BinaryReader br = new BinaryReader(stream))
-            {
-                b = br.ReadBytes(500000);
-                br.Close();
-            }
-            myResp.Close();
-            return b;
-        }
 
         private static void WriteBytesToFile(string fileName, byte[] content)
         {

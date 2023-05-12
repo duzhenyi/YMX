@@ -99,11 +99,11 @@ namespace D.YMX.Utils
                         // 图片切分
 
                         // 图片二值化
-                        Bitmap bitmap = new Bitmap(localCaptchaImgUrl);
-                        if (bitmap != null)
-                        {
+                        //Bitmap bitmap = new Bitmap(localCaptchaImgUrl);
+                        //if (bitmap != null)
+                        //{
                              
-                        }
+                        //}
                         // 根据字模，算出跟哪个最相近
 
                         return await GetAllAsins(countryEntity, asin);
@@ -111,7 +111,7 @@ namespace D.YMX.Utils
                     return countryEntity.Instance().GetAllAsins(res);
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 return null;
             }

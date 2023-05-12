@@ -405,7 +405,6 @@ namespace D.YMX
                 if (res != null)
                 {
                     asins.AddRange(res);
-                    break;
                 }
             }
 
@@ -421,7 +420,6 @@ namespace D.YMX
                 if (colorAsins != null)
                 {
                     allAsins.AddRange(colorAsins);
-                    break;
                 }
                 else
                 {

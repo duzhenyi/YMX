@@ -20,20 +20,66 @@ namespace D.YMX
         {
             InitializeComponent();
         }
+        private static Dictionary<string, string> dic = new Dictionary<string, string>();
 
         private void btnTest_Click(object sender, EventArgs e)
         {
-            if (textBox1.Text != "")
+            // 加载图片包地址 
+            var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha";
+            //C#遍历指定文件夹中的所有文件 
+            DirectoryInfo TheFolder = new DirectoryInfo(path);
+            //遍历文件夹
+            //foreach (DirectoryInfo NextFolder in TheFolder.GetDirectories())
+            //遍历所有图片
+            foreach (FileInfo fileInfo in TheFolder.GetFiles())
             {
-                var bitMap = new Bitmap("C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha\\20230512112902376.jpg");
-                for (int i = 0; i < 6; i++)
+                if (fileInfo.Name.Split(".")[1] != "jpg" && fileInfo.Name.Split(".")[1] != "png")
                 {
-                    // store in the database : code, length= image.width , binarydata
-                    string codePattern = ImgUtil.ScanImageUlong(bitMap);
-                    StoreInDatabase(textBox1.Text[i] + "," + codePattern);
+                    continue;
+                }
+                var fileName = fileInfo.Name.Split(".")[0];
+
+                var strs = fileName.ToCharArray().Distinct().ToList();
+                var count = 0;
+                foreach (var item in strs)
+                {
+                    if (dic.ContainsKey(item.ToString()))
+                    {
+                        count++;
+                    }
+                }
+                if (count == strs.Count)
+                {
+                    continue;
+                }
+                using (var bitMap = new Bitmap(fileInfo.FullName))
+                {
+                    for (int i = 0; i < fileName.Length; i++)
+                    {
+                        // store in the database : code, length= image.width , binarydata
+                        string codePattern = ImgUtil.ScanImageUlong(bitMap);
+                        var key = fileName[i].ToString();
+                        if (!dic.ContainsKey(key))
+                        {
+                            dic.Add(key, codePattern);
+                        }
+                    }
+                }
+                if (dic.Count == 36)
+                {
+                    break;
                 }
             }
+
+            // 缓存字模到本地txt文本
+            var str = new StringBuilder();
+            foreach (var item in dic.Keys)
+            {
+                str.AppendLine(item + ":" + dic[item].ToString());
+            }
+            StoreInDatabase(str.ToString());
         }
+
 
         private void StoreInDatabase(string msg)
         {
