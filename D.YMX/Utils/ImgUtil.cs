@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.Net;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
@@ -168,99 +169,6 @@ namespace D.YMX.Utils
 
         #region 二维码识别
 
-
-        private void button16_Click(Bitmap bmp)
-        {
-
-            //if (bmp != null)
-            //{
-
-            //    // 图片二值化
-            //    Bitmap bm = ConvertToBinaryImage(bmp);
-
-
-            //    long lastTicks = DateTime.Now.Ticks;
-
-            //    Hashtable table = new Hashtable();
-
-            //    // if dbs is empty, load from file
-            //    var dbs = new Database("C:\\temp\\ImageDatabase\\database_modified.txt");
-
-
-            //    // 查找字符边界
-            //    List<int> list = RecordBlack(bm);
-            //    List<int[]> edgeList = FindEdge(list);
-
-            //    // 将图片分割成四分或者更少
-            //    foreach (int[] range in edgeList)
-            //    {
-            //        // 图像分割
-            //        Bitmap temp = CutImage(bm, range[0], range[1] - range[0]);
-            //        //  遍历所有样本库元素
-            //        for (int i = 0; i < dbs.codeArray.Length; i++)
-            //        {
-            //            for (int j = 0; j < dbs.codeArray[i].Count; j++)
-            //            {
-            //                // 图片扫描
-            //                int len = dbs.codeArray[i][j].len;
-            //                // 从图片中扫描制定宽度
-            //                for (int k = 0; k < temp.Width - len + 1; k++)
-            //                {
-            //                    ulong[] codeArray = ScanImageUlong(temp, len, k);
-            //                    // 字符匹配
-            //                    double matchRate = MatchTwoCodes(codeArray, dbs.codeArray[i][j].code);
-
-            //                    if (matchRate > 0.95) // 0.95 matchRateThreshold
-            //                    {
-            //                        if (!table.Contains(k + range[0]))
-            //                            table.Add(k + range[0], dbs.codeArray[i][j].character);
-            //                    }
-            //                    if (matchRate >= 0.99)  // 0.99 matchRateThreshold_PerfectMatch
-            //                    {
-            //                        i = dbs.codeArray.Length - 1;
-            //                        j = dbs.codeArray[i].Count; // break j first, then i                                   
-            //                        break; // 成功找到匹配项，停止
-            //                    }
-            //                }
-            //            }
-            //        }
-            //        temp.Dispose();
-            //    }
-            //    bm.Dispose();
-            //    // 对匹配结果进行删减
-            //    List<string> resultList = SortHashtable(table);
-            //    if (resultList.Count == 4)
-            //    {
-            //        var code = resultList[0] + resultList[1] + resultList[2] + resultList[3];
-            //        long elapsedTicks = DateTime.Now.Ticks - lastTicks;
-            //        double diff = (new TimeSpan(elapsedTicks)).TotalMilliseconds;
-            //        //MessageBox.Show("匹配成功，用时" + diff + "毫秒");
-            //    }
-            //    //else
-            //    //MessageBox.Show("couldn't match!!!");
-            //}
-        }
-
-        public static List<string> SortHashtable(Hashtable ht)
-        {
-            List<string> rtn = new List<string>();
-            ArrayList keys = new ArrayList(ht.Keys);
-            keys.Sort();
-            rtn.Add((string)ht[keys[0]]);
-
-            int temp = (int)keys[0];
-            for (int i = 1; i < keys.Count; i++)
-            {
-                int next = ((int)keys[i]);
-                if (next - temp > 10)
-                {
-                    rtn.Add((string)ht[keys[i]]);
-                    temp = next;
-                }
-            }
-            return rtn;
-        }
-
         #region 1. 图片灰度处理
         /// <summary>
         /// 图像灰度化
@@ -370,7 +278,44 @@ namespace D.YMX.Utils
         }
         #endregion
 
-        #region 3. 字符边缘检测
+        #region 3. 图像分割
+
+        /// <summary>
+        /// 二值化之后的图像进行字符边缘检测，并分割为四幅小的图片
+        /// </summary>
+        /// <param name="bm"></param>
+        public static List<Bitmap> Cut(Bitmap bm)
+        {
+            List<int> list = RecordBlack(bm);
+            List<int[]> edgeList = FindEdge(list);
+            var bmList = new List<Bitmap>();
+
+            foreach (int[] dou in edgeList)
+            {
+                Bitmap m1 = CutImage(bm, dou[0], dou[1] - dou[0]);
+                bmList.Add(m1);
+            }
+            return bmList;
+        }
+
+        /// <summary>
+        /// 图像分割
+        /// </summary>
+        /// <param name="sourceMap"></param>
+        /// <param name="pos"></param>
+        /// <param name="width"></param>
+        /// <returns></returns>
+        public static Bitmap CutImage(Bitmap sourceMap, int pos, int width)
+        {
+            Bitmap rtnMap = new Bitmap(width, sourceMap.Height);
+            Rectangle srcReg = new Rectangle(pos, 0, width, sourceMap.Height);
+            //Rectangle destReg = new Rectangle(0, 0, width, sourceMap.Height);
+            rtnMap = sourceMap.Clone(srcReg, sourceMap.PixelFormat);
+            return rtnMap;
+        }
+
+
+        #region 字符边缘检测
         /// <summary>
         /// 字符边缘检测
         /// 符边缘检测是非常关键的一步，这里采用了一种比较简单的方法：首先，在二值化之后操作, 对图从左到右进行逐点扫描，找出其中有值等于0的列数（即找出图片中验证码字符（为黑色）所在的列数），记录到列表中
@@ -428,40 +373,9 @@ namespace D.YMX.Utils
             return rtnList;
         }
         #endregion
-
-        #region 4. 图像分割
-        /// <summary>
-        /// 图像分割
-        /// </summary>
-        /// <param name="sourceMap"></param>
-        /// <param name="pos"></param>
-        /// <param name="width"></param>
-        /// <returns></returns>
-        public static Bitmap CutImage(Bitmap sourceMap, int pos, int width)
-        {
-            Bitmap rtnMap = new Bitmap(width, sourceMap.Height);
-            Rectangle srcReg = new Rectangle(pos, 0, width, sourceMap.Height);
-            //Rectangle destReg = new Rectangle(0, 0, width, sourceMap.Height);
-            rtnMap = sourceMap.Clone(srcReg, sourceMap.PixelFormat);
-            return rtnMap;
-        }
-
-        // 二值化之后的图像进行字符边缘检测，并分割为四幅小的图片
-        //public static void Cut(Bitmap bm)
-        //{
-        //    List<int> list = RecordBlack(bm);
-        //    List<int[]> edgeList = FindEdge(list);
-        //    List<Bitmap> bmList = new List<Bitmap>();
-
-        //    foreach (int[] dou in edgeList)
-        //    {
-        //        Bitmap m1 = CutImage(bm, dou[0], dou[1] - dou[0]);
-        //        bmList.Add(m1);
-        //    }
-        //}
         #endregion
 
-        #region 5. 字符扫描
+        #region 4. 字符扫描
         /// <summary>
         /// 字符扫描
         /// 分割出来的单个字符按像素进行扫描。注意下面的代码中并没有将字符扫描的结果按0或者1存在string中，而是将每一列扫描的结果存在了一个类型为ulong的无符号长整型中。这里每一列的宽度是50，而ulong为64位，完全可以存下一列中所有的值
@@ -471,66 +385,61 @@ namespace D.YMX.Utils
         public static string ScanImageUlong(Bitmap bmp)
         {
             //每行每列扫描获取图片数字编码字符
-            string CodeNumber = bmp.Width.ToString();  //定义一个字符串变量用于存储特征码
-            ulong code;
+            string codeNumber = bmp.Width.ToString();  //定义一个字符串变量用于存储特征码
 
-            //对图进行逐点扫描，当Ｒ值不等于２５５时则将CodeNumber记为1，否则记为0
+            //对图进行逐点扫描，当Ｒ值不等于255时则将CodeNumber记为1，否则记为0
             for (int x = 0; x < bmp.Width; x++) //行扫描，由x.0至x.图片宽度
             {
-                code = 0;
+                StringBuilder code = new StringBuilder();
                 for (int y = 0; y < bmp.Height; y++) //列扫描，由y.0至图片高度
                 {
                     if (bmp.GetPixel(x, y).R == 0)  //对图片中的点进行判断，当x,y点中的R色为0的时候
                     {
-                        //记录为1
-                        if (y < 64)
-                            code += (ulong)1 << y;
+                        code.Append("0");
                     }
-                }
-                CodeNumber += "," + code.ToString();
-            }
-
-            //关闭图片
-            //bmp.Dispose();
-            return CodeNumber;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="len">图片扫描长度</param>
-        /// <param name="k">第几个宽度</param>
-        /// <returns></returns>
-        public static string ScanImageUlong(Bitmap bmp, int len, int k)
-        {
-            //每行每列扫描获取图片数字编码字符
-            string CodeNumber = bmp.Width.ToString();  //定义一个字符串变量用于存储特征码
-            ulong code;
-
-            //对图进行逐点扫描，当Ｒ值不等于２５５时则将CodeNumber记为1，否则记为0
-            for (int x = 0; x < bmp.Width; x++) //行扫描，由x.0至x.图片宽度
-            {
-                code = 0;
-                for (int y = 0; y < bmp.Height; y++) //列扫描，由y.0至图片高度
-                {
-                    if (bmp.GetPixel(x, y).R == 0)  //对图片中的点进行判断，当x,y点中的R色为0的时候
+                    else
                     {
-                        //记录为1
-                        if (y < 64)
-                            code += (ulong)1 << y;
+                        code.Append("1");
                     }
                 }
-                CodeNumber += "," + code.ToString();
+                codeNumber += "," + code.ToString();
             }
 
             //关闭图片
-            //bmp.Dispose();
-            return CodeNumber;
+            return codeNumber;
         }
         #endregion
 
         #region 6. 字符匹配
+
+        public static bool CompareArr(string[] arr1, string[] arr2)
+        {
+            bool[] flag = new bool[arr1.Length];//初始化一个bool数组，初始值全为false；
+            for (int i = 0; i < arr1.Length; i++)
+            {
+                for (int j = 0; j < arr2.Length; j++)
+                {
+                    if (arr1[i] == arr2[j])
+                    {//遇到有相同的值，对应的bool数组的值设为true；
+                        flag[i] = true;
+                        break;  
+                    }
+                }
+            }
+
+            foreach (var item in flag)
+            {
+                if (item == false) return false; //遍历bool数组，还有false，就说明有不同的值，结果返回false。
+            }
+            return true;
+        }
+
+        public static bool MatchTwoCodes(string[] arr1, string[] arr2)
+        {
+            var q = from a in arr1 join b in arr2 on a equals b select a;
+            bool flag = arr1.Length == arr2.Length && q.Count() == arr1.Length;
+            return flag;//内容相同返回true,反之返回false。
+        }
 
         /// <summary>
         /// 字符匹配
@@ -541,21 +450,21 @@ namespace D.YMX.Utils
         /// <returns></returns>
         public static double MatchTwoCodes(ulong[] code1, ulong[] code2)
         {
-            //// record the match cases
-            //int count = 0;
-            //double total = code1.Length * ulongBit;
+            var ulongBit = 0.9;
+            // record the match cases
+            int count = 0;
+            double total = code1.Length * ulongBit;
 
-            //for (int i = 0; i < code1.Length; i++)
-            //{
-            //    ulong rtn = (code1[i] ^ code2[i]);  // if same, the result will be 0
-            //    int nMatch = BitCount(rtn);   // 计算不匹配
-            //    count += nMatch;
+            for (int i = 0; i < code1.Length; i++)
+            {
+                ulong rtn = (code1[i] ^ code2[i]);  //如果相同，则结果为0
+                int nMatch = BitCount(rtn);   // 计算不匹配
+                count += nMatch;
 
-            //    if (ulongBit - nMatch < ulongBit * matchRateThreshold_colomn)  // 0.9
-            //        return 0;
-            //}
-            //return 1.0 - count / total;
-            return 0;
+                //if (ulongBit - nMatch < ulongBit * 0.9) 
+                //    return 0;
+            }
+            return 1.0 - count / total;
         }
         /// <summary>
         /// 任意给定一个32位无符号整数n，求n的二进制表示中1的个数，
