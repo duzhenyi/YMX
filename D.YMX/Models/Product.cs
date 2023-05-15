@@ -53,7 +53,7 @@
         // Ship from == Amazon && Sold by != Amazon 是FBA模式
         // Ship from != Amazon && Sold by == Ship from 是FBM模式    
         /// </summary>
-        public bool AutomaticShipping { get; set; }
+        public string AutomaticShipping { get; set; }
         /// <summary>
         /// 发货地址
         /// </summary>

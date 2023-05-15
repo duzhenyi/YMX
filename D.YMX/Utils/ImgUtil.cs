@@ -390,9 +390,15 @@ namespace D.YMX.Utils
             //对图进行逐点扫描，当Ｒ值不等于255时则将CodeNumber记为1，否则记为0
             for (int x = 0; x < bmp.Width; x++) //行扫描，由x.0至x.图片宽度
             {
+
                 StringBuilder code = new StringBuilder();
                 for (int y = 0; y < bmp.Height; y++) //列扫描，由y.0至图片高度
                 {
+                    if (x == 1 && y == 33)
+                    {
+                        var r = bmp.GetPixel(x, y).R;
+                    }
+
                     if (bmp.GetPixel(x, y).R == 0)  //对图片中的点进行判断，当x,y点中的R色为0的时候
                     {
                         code.Append("0");
@@ -422,7 +428,7 @@ namespace D.YMX.Utils
                     if (arr1[i] == arr2[j])
                     {//遇到有相同的值，对应的bool数组的值设为true；
                         flag[i] = true;
-                        break;  
+                        break;
                     }
                 }
             }

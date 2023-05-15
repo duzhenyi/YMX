@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -149,32 +150,34 @@ namespace D.YMX
 
         private void button4_Click(object sender, EventArgs e)
         {
+            Bitmap bmp = pictureBox1.Image as Bitmap;
+            var imgGary = ImgUtil.ToGray(bmp);
+            var img2 = ImgUtil.ConvertToBinaryImage(imgGary);
+            var list = ImgUtil.Cut(img2);
+
             // 字符扫描
             var str = new StringBuilder();
-            foreach (var item in flowLayoutPanel1.Controls)
+            foreach (var bitMap in list)
             {
-                var pic = item as PictureBox;
-                var bitMap = pic.Image as Bitmap;
                 var code = ImgUtil.ScanImageUlong(bitMap);
                 str.AppendLine(code);
                 str.Append("\n");
 
-
-                for (int x = 0; x < bitMap.Width; x++) //行扫描，由x.0至x.图片宽度
-                {
-                    for (int y = 0; y < bitMap.Height; y++) //列扫描，由y.0至图片高度
-                    {
-                        if (bitMap.GetPixel(x, y).R == 0)  //对图片中的点进行判断，当x,y点中的R色为0的时候，//记录为1
-                        {
-                            Trace.Write("1");
-                        }
-                        else
-                        {
-                            Trace.Write("0");
-                        }
-                    }
-                    Trace.Write("\n");
-                }
+                //for (int x = 0; x < bitMap.Width; x++) //行扫描，由x.0至x.图片宽度
+                //{
+                //    for (int y = 0; y < bitMap.Height; y++) //列扫描，由y.0至图片高度
+                //    {
+                //        if (bitMap.GetPixel(x, y).R == 0)  //对图片中的点进行判断，当x,y点中的R色为0的时候，//记录为1
+                //        {
+                //            Trace.Write("1");
+                //        }
+                //        else
+                //        {
+                //            Trace.Write("0");
+                //        }
+                //    }
+                //    Trace.Write("\n");
+                //}
             }
 
             richTextBox1.Text = str.ToString();
@@ -182,8 +185,20 @@ namespace D.YMX
 
         private void button1_Click_1(object sender, EventArgs e)
         {
-            // 字符匹配
-            var list = richTextBox1.Text.Split('\n');
+            // 字符匹配 
+            var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha\\AEJXLE.jpg";
+            Bitmap bitMap =  new Bitmap(path);
+            var garyImg = ImgUtil.ToGray(bitMap);
+            var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
+            var bitmaps = ImgUtil.Cut(img2);
+
+            // 字符扫描
+            var codeList = new List<string>();
+            for (int i = 0; i < bitmaps.Count; i++)
+            {
+                var code = ImgUtil.ScanImageUlong(bitmaps[i]);
+                codeList.Add(code);
+            }
 
             // 1. 加载字模
             string filePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Uploads/Captcha/template.txt";
@@ -213,7 +228,7 @@ namespace D.YMX
                     templateCode[i] = templates[i + 1];
                 }
 
-                foreach (var item in list)
+                foreach (var item in codeList)
                 {
                     if (item == "")
                     {
@@ -244,6 +259,7 @@ namespace D.YMX
                 }
             }
             this.textBox1.Text = result;
+            sr.Dispose();
         }
 
         public static List<string> SortHashtable(Hashtable ht)
@@ -337,6 +353,17 @@ namespace D.YMX
                 }
 
             }
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            var countryEntity = new CountryEntity()
+            {
+                 CountryType = CountryEnum.America, 
+            };
+            var filePath = "C:\\Users\\29561\\Documents\\HBuilderProjects\\all.html";
+            var detailHtml = File.ReadAllText(filePath);
+            var res = countryEntity.Instance().GetDetail(detailHtml);
         }
     }
 }

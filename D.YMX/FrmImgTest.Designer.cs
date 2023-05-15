@@ -41,6 +41,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.button1 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.button5 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -161,11 +162,22 @@
             this.textBox1.Size = new System.Drawing.Size(657, 30);
             this.textBox1.TabIndex = 15;
             // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(786, 27);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(112, 34);
+            this.button5.TabIndex = 16;
+            this.button5.Text = "解析";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
             // FrmImgTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1096, 968);
+            this.Controls.Add(this.button5);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button1);
             this.Controls.Add(this.label1);
@@ -203,5 +215,6 @@
         private Label label1;
         private Button button1;
         private TextBox textBox1;
+        private Button button5;
     }
 }

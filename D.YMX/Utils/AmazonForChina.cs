@@ -295,7 +295,7 @@ namespace D.YMX.Utils
                 product.Address = addressNode.InnerText;
                 if (product.Address.Contains("亚马逊"))
                 {
-                    product.AutomaticShipping = true;
+                    product.AutomaticShipping = "亚马逊自营模式";
                 }
             }
 

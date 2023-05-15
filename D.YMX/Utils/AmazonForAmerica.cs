@@ -101,8 +101,8 @@ namespace D.YMX.Utils
 
             var imgNode = doc.DocumentNode.SelectSingleNode("//div[@class='a-row a-text-center']/img[1]");
             if (imgNode != null)
-            { 
-                return imgNode.Attributes["src"].Value;  
+            {
+                return imgNode.Attributes["src"].Value;
             }
             return null;
         }
@@ -127,43 +127,41 @@ namespace D.YMX.Utils
             product.Name = doc.DocumentNode.SelectSingleNode("//span[@id='productTitle']").InnerText;
 
             // 2. 基本信息 id="detailBullets_feature_div"
-            var basicNode = doc.DocumentNode.SelectSingleNode("//div[@id='detailBullets_feature_div']");
+            var dic = new Dictionary<string, string>();
+            var basicNode = doc.DocumentNode.SelectSingleNode("//table[@id='productDetails_detailBullets_sections1']");
             if (basicNode != null)
             {
-                var basicNodes = basicNode.SelectNodes("./ul[1]/li");
+                var basicNodes = basicNode.SelectNodes("./tr");
                 if (basicNodes != null)
                 {
-                    var dic = new Dictionary<string, string>();
                     foreach (var itemNode in basicNodes)
                     {
                         // 制造商是否已停产,制造商,ASIN，型号/款式，部门
-                        var key = itemNode.SelectSingleNode("./span[1]/span[1]");
-                        var value = itemNode.SelectSingleNode("./span[1]/span[2]");
-                        if (key != null && value != null)
+                        var key = itemNode.SelectSingleNode("./th[1]");
+                        var value = itemNode.SelectSingleNode("./td[1]");
+                        if (key != null && value != null && !dic.ContainsKey(key.InnerText))
                         {
-                            dic.Add(key.InnerText.Replace("\n", "").Replace(" ", ""), value.InnerText);
+                            dic.Add(key.InnerText, value.InnerText);
                         }
                     }
                 }
             }
 
-            // 3. 排名，评分，评论数 id="detailBulletsWrapper_feature_div" > ul 2个 
-            var otherNode = doc.DocumentNode.SelectSingleNode("//div[@id='detailBulletsWrapper_feature_div']");
-            if (otherNode != null)
+            // 3. 评分
+            var startNode = doc.DocumentNode.SelectSingleNode("//span[@id='acrPopover']");
+            if (startNode != null)
             {
-                var rankingNode = otherNode.SelectSingleNode("./ul[1]/li[1]");
-                if (rankingNode != null)
-                {// 亚马逊热销商品排名
-                    product.Ranking = rankingNode.SelectSingleNode("./span[1]").InnerText.Trim();
-                }
-
-                var startLevelNode = otherNode.SelectSingleNode("./ul[2]/li[1]");
+                var startLevelNode = startNode.SelectSingleNode("./span[1]/a[1]/span[1]");
                 if (startLevelNode != null)
                 {
-                    product.StartLevel = startLevelNode.SelectSingleNode("//span[@id='acrPopover']").Attributes["title"].Value;
-
-                    product.CommentTotal = startLevelNode.SelectSingleNode("//a[@id='acrCustomerReviewLink']").InnerText;
+                    product.StartLevel = startLevelNode.InnerText;
                 }
+            }
+            // 4. 评论数 
+            var commentNode = doc.DocumentNode.SelectSingleNode("//span[@id='acrCustomerReviewText']");
+            if (commentNode != null)
+            {
+                product.CommentTotal = commentNode.InnerText;
             }
 
             // 4. 价格
@@ -174,13 +172,42 @@ namespace D.YMX.Utils
             }
 
             // 5. 是否自动发货，货物来自哪里
-            var addressNode = doc.DocumentNode.SelectSingleNode("//div[@id='merchant-info']/a[1]/span[1]");
-            if (addressNode != null)
+            var shipsFrom = string.Empty;
+            var soldBy = string.Empty;
+
+            var addressValuesNodes = doc.DocumentNode.SelectNodes("//div[@id='tabular-buybox']/div[1]/div[@class='tabular-buybox-text']");
+            if (addressValuesNodes != null)
             {
-                product.Address = addressNode.InnerText;
-                if (product.Address.Contains("亚马逊"))
+                foreach (var addressNode in addressValuesNodes)
                 {
-                    product.AutomaticShipping = true;
+                    if (addressNode.Attributes["tabular-attribute-name"].Value == "Ships from")
+                    {
+                        shipsFrom = addressNode.InnerText;
+                    }
+
+                    if (addressNode.Attributes["tabular-attribute-name"].Value == "Sold by")
+                    {
+                        soldBy = addressNode.InnerText;
+                    }
+                }
+            }
+
+            if (!string.IsNullOrEmpty(shipsFrom) && !string.IsNullOrEmpty(soldBy))
+            {
+                product.Address = shipsFrom + "/" + soldBy;
+                shipsFrom = shipsFrom.Replace("\n", "").Trim();
+                soldBy = soldBy.Replace("\n", "").Trim();
+                if (shipsFrom == "Amazon" && soldBy == "Amazon")
+                {// Ship from == Amazon && Sold by == Amazon 是亚马逊自营模式
+                    product.AutomaticShipping = "亚马逊自营模式";
+                }
+                else if (shipsFrom == "Amazon" && soldBy != "Amazon")
+                {//Ship from == Amazon && Sold by != Amazon 是FBA模式
+                    product.AutomaticShipping = "FBA模式";
+                }
+                else
+                {// Ship from != Amazon && Sold by == Ship from 是FBM模式
+                    product.AutomaticShipping = "FBM模式";
                 }
             }
 
@@ -197,12 +224,14 @@ namespace D.YMX.Utils
                 product.Size = sizeNode.InnerText;
             }
 
-
             return product;
 
         }
 
-
+//美国商标局：http://tmsearch.uspto.gov/
+//欧洲商标局：https://euipo.europa.eu/
+//英国商标局：http://www.ipo.gov.uk/
+//日本商标局：http://www.jpo.go.jp/
         #endregion
     }
 }
