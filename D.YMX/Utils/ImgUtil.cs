@@ -390,7 +390,6 @@ namespace D.YMX.Utils
             //对图进行逐点扫描，当Ｒ值不等于255时则将CodeNumber记为1，否则记为0
             for (int x = 0; x < bmp.Width; x++) //行扫描，由x.0至x.图片宽度
             {
-
                 StringBuilder code = new StringBuilder();
                 for (int y = 0; y < bmp.Height; y++) //列扫描，由y.0至图片高度
                 {
@@ -418,33 +417,53 @@ namespace D.YMX.Utils
 
         #region 6. 字符匹配
 
-        public static bool CompareArr(string[] arr1, string[] arr2)
+        /// <summary>
+        /// 我们定义了两个不同长度的字符数组 arr1 和 arr2，并使用 Math.Min 方法获取它们的最小长度。
+        /// 然后，我们使用一个循环遍历两个数组中的元素，并计算它们的匹配率。最后，我们将匹配率输出到控制台。
+        /// 请注意，上面的代码假设两个数组中的元素都是 0 或 1。
+        /// </summary>
+        /// <param name="arr1"></param>
+        /// <param name="arr2"></param>
+        /// <returns></returns>
+        public static double CompareArr(string[] arr1, string[] arr2)
         {
-            bool[] flag = new bool[arr1.Length];//初始化一个bool数组，初始值全为false；
-            for (int i = 0; i < arr1.Length; i++)
+            int matchCount = 0;
+            int minLength = Math.Min(arr1.Length, arr2.Length);
+
+            for (int i = 0; i < minLength; i++)
             {
-                for (int j = 0; j < arr2.Length; j++)
+                if (arr1[i] == arr2[i])
                 {
-                    if (arr1[i] == arr2[j])
-                    {//遇到有相同的值，对应的bool数组的值设为true；
-                        flag[i] = true;
-                        break;
-                    }
+                    matchCount++;
                 }
             }
 
-            foreach (var item in flag)
-            {
-                if (item == false) return false; //遍历bool数组，还有false，就说明有不同的值，结果返回false。
-            }
-            return true;
+            double matchRate = (double)matchCount / minLength;
+            return matchRate;
         }
 
-        public static bool MatchTwoCodes(string[] arr1, string[] arr2)
+        /// <summary>
+        /// 计算匹配率 输出应该是“Match rate: 90%”。
+        /// </summary>
+        /// <param name="str1"></param>
+        /// <param name="str2"></param>
+        /// <returns></returns>
+        public static double CalculateMatchRate(string str1, string str2)
         {
-            var q = from a in arr1 join b in arr2 on a equals b select a;
-            bool flag = arr1.Length == arr2.Length && q.Count() == arr1.Length;
-            return flag;//内容相同返回true,反之返回false。
+            int maxLength = Math.Max(str1.Length, str2.Length);
+            int minLength = Math.Min(str1.Length, str2.Length);
+            int matchingChars = 0;
+
+            for (int i = 0; i < minLength; i++)
+            {
+                if (str1[i] == str2[i])
+                {
+                    matchingChars++;
+                }
+            }
+
+            double matchRate = (double)matchingChars / maxLength * 100;
+            return matchRate;
         }
 
         /// <summary>
@@ -457,7 +476,6 @@ namespace D.YMX.Utils
         public static double MatchTwoCodes(ulong[] code1, ulong[] code2)
         {
             var ulongBit = 0.9;
-            // record the match cases
             int count = 0;
             double total = code1.Length * ulongBit;
 

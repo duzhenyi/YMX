@@ -139,8 +139,8 @@ namespace D.YMX
                 for (int i = 0; i < list.Count; i++)
                 {
                     var pic = new PictureBox();
-                    pic.Width = 100;
-                    pic.Height = 100;
+                    //pic.Width = 100;
+                    //pic.Height = 100;
                     pic.Image = list[i];
                     pic.Location = new Point(100 * i + 100, 0);
                     flowLayoutPanel1.Controls.Add(pic);
@@ -251,7 +251,7 @@ namespace D.YMX
                     {
                         // 长度一致，进行字模比对
                         var matchRate = ImgUtil.CompareArr(templateCode, code);
-                        if (matchRate)
+                        if (matchRate > 0.9)
                         {
                             result += templateCharacter;
                         }
