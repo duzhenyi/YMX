@@ -30,6 +30,7 @@ namespace D.YMX
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmMain));
             this.tabContent = new System.Windows.Forms.TabControl();
             this.tabKeywords = new System.Windows.Forms.TabPage();
             this.btnExport = new System.Windows.Forms.Button();
@@ -106,7 +107,6 @@ namespace D.YMX
             this.btnMin = new System.Windows.Forms.Button();
             this.btnClose = new System.Windows.Forms.Button();
             this.btnMax = new System.Windows.Forms.Button();
-            this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.tabContent.SuspendLayout();
             this.tabKeywords.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvKeyWordsProduct)).BeginInit();
@@ -994,7 +994,6 @@ namespace D.YMX
             this.panleTop.Controls.Add(this.btnMin);
             this.panleTop.Controls.Add(this.btnClose);
             this.panleTop.Controls.Add(this.btnMax);
-            this.panleTop.Controls.Add(this.menuStrip);
             this.panleTop.Dock = System.Windows.Forms.DockStyle.Top;
             this.panleTop.Location = new System.Drawing.Point(0, 0);
             this.panleTop.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
@@ -1062,18 +1061,6 @@ namespace D.YMX
             this.btnMax.UseVisualStyleBackColor = false;
             this.btnMax.Click += new System.EventHandler(this.btnMax_Click);
             // 
-            // menuStrip
-            // 
-            this.menuStrip.BackColor = System.Drawing.Color.Transparent;
-            this.menuStrip.Dock = System.Windows.Forms.DockStyle.None;
-            this.menuStrip.ImageScalingSize = new System.Drawing.Size(24, 24);
-            this.menuStrip.Location = new System.Drawing.Point(0, 0);
-            this.menuStrip.Name = "menuStrip";
-            this.menuStrip.Padding = new System.Windows.Forms.Padding(7, 3, 0, 3);
-            this.menuStrip.Size = new System.Drawing.Size(202, 24);
-            this.menuStrip.TabIndex = 4;
-            this.menuStrip.Text = "menuStrip";
-            // 
             // FrmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
@@ -1084,6 +1071,7 @@ namespace D.YMX
             this.Controls.Add(this.panleTop);
             this.Controls.Add(this.tabContent);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.Name = "FrmMain";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
@@ -1112,7 +1100,6 @@ namespace D.YMX
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown2)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.panleTop.ResumeLayout(false);
-            this.panleTop.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -1195,6 +1182,5 @@ namespace D.YMX
         private Button btnMin;
         private Button btnClose;
         private Button btnMax;
-        private MenuStrip menuStrip;
     }
 }

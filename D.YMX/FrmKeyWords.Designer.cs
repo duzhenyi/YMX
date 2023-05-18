@@ -31,6 +31,7 @@ namespace D.YMX
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(FrmKeyWords));
             this.btnStart = new System.Windows.Forms.Button();
             this.btnEnd = new System.Windows.Forms.Button();
             this.checkBoxLeftAll = new System.Windows.Forms.CheckBox();
@@ -128,6 +129,7 @@ namespace D.YMX
             this.Controls.Add(this.checkBoxLeftAll);
             this.Controls.Add(this.btnEnd);
             this.Controls.Add(this.btnStart);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "FrmKeyWords";
             this.Text = "FrmKeyWords";
             this.ResumeLayout(false);

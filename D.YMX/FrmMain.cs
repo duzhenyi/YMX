@@ -446,7 +446,7 @@ namespace D.YMX
             this.btnStop.Enabled = true;
             this.btnExport.Enabled = true;
         }
-      
+
         /// <summary>
         /// 停止
         /// </summary>
