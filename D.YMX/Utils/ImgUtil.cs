@@ -448,7 +448,7 @@ namespace D.YMX.Utils
         /// <param name="str1"></param>
         /// <param name="str2"></param>
         /// <returns></returns>
-        public static double CalculateMatchRate(string str1, string str2)
+        public static double CompareArr(string str1, string str2)
         {
             int maxLength = Math.Max(str1.Length, str2.Length);
             int minLength = Math.Min(str1.Length, str2.Length);

@@ -43,6 +43,7 @@
             this.button1 = new System.Windows.Forms.Button();
             this.textBox1 = new System.Windows.Forms.TextBox();
             this.button5 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox3)).BeginInit();
@@ -50,9 +51,9 @@
             // 
             // btnTest
             // 
-            this.btnTest.Location = new System.Drawing.Point(25, 25);
+            this.btnTest.Location = new System.Drawing.Point(868, 14);
             this.btnTest.Name = "btnTest";
-            this.btnTest.Size = new System.Drawing.Size(170, 34);
+            this.btnTest.Size = new System.Drawing.Size(205, 34);
             this.btnTest.TabIndex = 1;
             this.btnTest.Text = "字模扫描存储";
             this.btnTest.UseVisualStyleBackColor = true;
@@ -60,7 +61,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(461, 32);
+            this.pictureBox1.Location = new System.Drawing.Point(286, 36);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(238, 137);
             this.pictureBox1.TabIndex = 3;
@@ -86,7 +87,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(325, 200);
+            this.button3.Location = new System.Drawing.Point(325, 195);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(112, 34);
             this.button3.TabIndex = 6;
@@ -140,7 +141,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(325, 32);
+            this.label1.Location = new System.Drawing.Point(150, 36);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(100, 24);
             this.label1.TabIndex = 13;
@@ -165,19 +166,30 @@
             // 
             // button5
             // 
-            this.button5.Location = new System.Drawing.Point(786, 27);
+            this.button5.Location = new System.Drawing.Point(868, 65);
             this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(112, 34);
+            this.button5.Size = new System.Drawing.Size(205, 34);
             this.button5.TabIndex = 16;
-            this.button5.Text = "解析";
+            this.button5.Text = "解析HTML详情";
             this.button5.UseVisualStyleBackColor = true;
             this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(12, 27);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(112, 34);
+            this.button6.TabIndex = 17;
+            this.button6.Text = "选择图片";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
             // FrmImgTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(11F, 24F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1096, 968);
+            this.Controls.Add(this.button6);
             this.Controls.Add(this.button5);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button1);
@@ -218,5 +230,6 @@
         private Button button1;
         private TextBox textBox1;
         private Button button5;
+        private Button button6;
     }
 }

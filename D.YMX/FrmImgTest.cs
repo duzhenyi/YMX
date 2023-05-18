@@ -28,7 +28,7 @@ namespace D.YMX
             this.pictureBox1.Image = new Bitmap(path + "\\" + "AEJXLE.jpg");
         }
 
-        private static Dictionary<string, string> dic = new Dictionary<string, string>();
+        private static Dictionary<string, List<string>> dic = new Dictionary<string, List<string>>();
 
         private void btnTest_Click(object sender, EventArgs e)
         {
@@ -47,19 +47,19 @@ namespace D.YMX
                 }
                 var fileName = fileInfo.Name.Split(".")[0];
 
-                var strs = fileName.ToCharArray().Distinct().ToList();
-                var count = 0;
-                foreach (var item in strs)
-                {
-                    if (dic.ContainsKey(item.ToString()))
-                    {
-                        count++;
-                    }
-                }
-                if (count == strs.Count)
-                {
-                    continue;
-                }
+                //var strs = fileName.ToCharArray().Distinct().ToList();
+                //var count = 0;
+                //foreach (var item in strs)
+                //{
+                //    if (dic.ContainsKey(item.ToString()))
+                //    {
+                //        count++;
+                //    }
+                //}
+                //if (count == strs.Count)
+                //{
+                //    continue;
+                //}
                 using (var bitMap = new Bitmap(fileInfo.FullName))
                 {
                     // 切割图片
@@ -72,21 +72,24 @@ namespace D.YMX
                         var key = fileName[i].ToString();
                         if (!dic.ContainsKey(key))
                         {
-                            dic.Add(key, codePattern);
+                            dic.Add(key, new List<string>() { codePattern });
+                        }
+                        else
+                        {
+                            if (!dic[key].Any(m => m == codePattern))
+                            {
+                                dic[key].Add(codePattern);
+                            }
                         }
                     }
-                }
-                if (dic.Count == 36)
-                {
-                    break;
                 }
             }
 
             // 缓存字模到本地txt文本
             var str = new StringBuilder();
-            foreach (var item in dic.Keys)
+            foreach (var key in dic.Keys)
             {
-                str.AppendLine(item + ":" + dic[item].ToString());
+                str.AppendLine(key + ":" + string.Join("|", dic[key]) + ")");
             }
             StoreInDatabase(str.ToString());
         }
@@ -101,6 +104,11 @@ namespace D.YMX
                 Directory.CreateDirectory(filePath);
             }
             filePath += "template.txt";
+
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
 
             StreamWriter sw = new StreamWriter(filePath, true);
             sw.WriteLine(msg);
@@ -186,79 +194,88 @@ namespace D.YMX
         private void button1_Click_1(object sender, EventArgs e)
         {
             // 字符匹配 
-            var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha\\AEJXLE.jpg";
-            Bitmap bitMap =  new Bitmap(path);
-            var garyImg = ImgUtil.ToGray(bitMap);
-            var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
-            var bitmaps = ImgUtil.Cut(img2);
+            //var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha\\AEJXLE.jpg";
+            //Bitmap bitMap = new Bitmap(path);
+            //var garyImg = ImgUtil.ToGray(bitMap);
+            //var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
+
+            //var bitmaps = ImgUtil.Cut(img2);
 
             // 字符扫描
             var codeList = new List<string>();
-            for (int i = 0; i < bitmaps.Count; i++)
+            for (int i = 0; i < flowLayoutPanel1.Controls.Count; i++)
             {
-                var code = ImgUtil.ScanImageUlong(bitmaps[i]);
+                var pic = flowLayoutPanel1.Controls[i] as PictureBox;
+                var code = ImgUtil.ScanImageUlong(pic.Image as Bitmap);
                 codeList.Add(code);
             }
 
             // 1. 加载字模
             string filePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Uploads/Captcha/template.txt";
             StreamReader sr = new StreamReader(filePath);
+            var str = sr.ReadToEnd();
+            var files = str.Split(")");
 
-            var result = string.Empty;
-            while (sr.Peek() > -1)
+            var result = new string[codeList.Count];
+            for (int z = 0; z < codeList.Count; z++)
             {
-                string lineText = sr.ReadLine();
-                if (lineText == "")
+                if (codeList[z] == "")
                 {
                     continue;
                 }
                 // 分割后的字符
-                string[] templates = lineText.Split(',');
+                string[] strs = codeList[z].Split(',');
 
-                // 1. 图片中的字符,字母名称
-                string templateCharacter = templates[0].Split(':')[0];
-
-                // 2. 字符的宽度
-                int templateLen = int.Parse(templates[0].Split(':')[1]);
+                //  图片中的字符
+                int len = int.Parse(strs[0]);
 
                 // 3. 字符扫描的结果
-                string[] templateCode = new string[templateLen];
-                for (int i = 0; i < templateLen; i++)
+                string[] code = new string[len];
+                for (int i = 0; i < len; i++)
                 {
-                    templateCode[i] = templates[i + 1];
+                    code[i] = strs[i + 1];
                 }
 
-                foreach (var item in codeList)
+                foreach (var file in files)
                 {
-                    if (item == "")
+                    var lineText = file.Replace("\r", "").Replace("\n", "");
+                    if (lineText == "")
                     {
                         continue;
                     }
                     // 分割后的字符
-                    string[] strs = item.Split(',');
+                    string[] templates = lineText.Split(':');
 
-                    //  图片中的字符
-                    int len = int.Parse(strs[0]);
+                    // 1. 图片中的字符,字母名称
+                    string templateCharacter = templates[0];
 
-                    // 3. 字符扫描的结果
-                    string[] code = new string[len];
-                    for (int i = 0; i < len; i++)
+                    // 后面的多个字符
+                    var cahrts = templates[1].Split("|");
+
+                    foreach (var chart in cahrts)
                     {
-                        code[i] = strs[i + 1];
-                    }
+                        var charts2 = chart.Split(',');
+                        // 2. 字符的宽度
+                        int templateLen = int.Parse(charts2[0]);
 
-                    if (templateLen == len)
-                    {
-                        // 长度一致，进行字模比对
-                        var matchRate = ImgUtil.CompareArr(templateCode, code);
-                        if (matchRate > 0.9)
+                        // 3. 字符扫描的结果
+                        string[] templateCode = new string[templateLen];
+                        for (int i = 0; i < templateLen; i++)
                         {
-                            result += templateCharacter;
+                            templateCode[i] = charts2[i + 1];
+                        }
+
+                        // 进行字模比对
+                        var matchRate = ImgUtil.CompareArr(templateCode, code);
+                        Trace.WriteLine(templateCharacter + ":" + matchRate);
+                        if (matchRate > 0.7)
+                        {
+                            result[z] = templateCharacter;
                         }
                     }
                 }
             }
-            this.textBox1.Text = result;
+            this.textBox1.Text = string.Join(" ", result);
             sr.Dispose();
         }
 
@@ -359,11 +376,21 @@ namespace D.YMX
         {
             var countryEntity = new CountryEntity()
             {
-                 CountryType = CountryEnum.America, 
+                CountryType = CountryEnum.America,
             };
             var filePath = "C:\\Users\\29561\\Documents\\HBuilderProjects\\all.html";
             var detailHtml = File.ReadAllText(filePath);
             var res = countryEntity.Instance().GetDetail(detailHtml);
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            DialogResult result = fileDialog.ShowDialog();
+            if (result == DialogResult.OK)
+            {
+                this.pictureBox1.Image = Image.FromFile(fileDialog.FileName);
+            } 
         }
     }
 }
