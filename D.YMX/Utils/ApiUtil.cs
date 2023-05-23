@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace D.YMX.Utils
 {
@@ -25,7 +26,16 @@ namespace D.YMX.Utils
                 var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    await CheckCacptImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    if (checkRes == EnumCheckCaptcha.OK)
+                    {
+                        return await GetTotalAsync(countryEntity, keyWords);
+                    }
+                    else if (checkRes == EnumCheckCaptcha.No)
+                    {
+                        return 0;
+                    }
+
                     // 解析Html
                     HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(res);
@@ -56,7 +66,15 @@ namespace D.YMX.Utils
                 var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    await CheckCacptImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    if (checkRes == EnumCheckCaptcha.OK)
+                    {
+                        return await GetAsinListAsync(countryEntity, keyWords, page);
+                    }
+                    else if (checkRes == EnumCheckCaptcha.No)
+                    {
+                        return null;
+                    }
                 }
                 // 3. 解析Html
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
@@ -93,8 +111,19 @@ namespace D.YMX.Utils
                 var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    await CheckCacptImg(res, countryEntity);
-                    return countryEntity.Instance().GetAllAsins(res);
+                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    if (checkRes == EnumCheckCaptcha.None)
+                    {
+                        return countryEntity.Instance().GetAllAsins(res);
+                    }
+                    else if (checkRes == EnumCheckCaptcha.OK)
+                    {
+                        return await GetAllAsins(countryEntity, asin);
+                    }
+                    else if (checkRes == EnumCheckCaptcha.No)
+                    {
+                        return null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -122,9 +151,20 @@ namespace D.YMX.Utils
 
                 if (!string.IsNullOrEmpty(res))
                 {
-                    await CheckCacptImg(res, countryEntity);
-                    // 3. 解析Html
-                    return countryEntity.Instance().GetDetail(res);
+                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    if (checkRes == EnumCheckCaptcha.None)
+                    {
+                        // 3. 解析Html
+                        return countryEntity.Instance().GetDetail(res);
+                    }
+                    else if (checkRes == EnumCheckCaptcha.OK)
+                    {
+                        return await GetDetailAsync(countryEntity, asin);
+                    }
+                    else
+                    {
+                        return null;
+                    }
                 }
             }
             catch (Exception ex)
@@ -140,7 +180,7 @@ namespace D.YMX.Utils
         /// <param name="html"></param>
         /// <param name="countryEntity"></param>
         /// <returns></returns>
-        private static async Task CheckCacptImg(string html, CountryEntity countryEntity)
+        private static async Task<EnumCheckCaptcha> CheckCacptchImg(string html, CountryEntity countryEntity)
         {
             try
             {
@@ -156,13 +196,23 @@ namespace D.YMX.Utils
 
                     if (!string.IsNullOrEmpty(captcha))
                     {
-                        await HttpUtil.GetHtmlAsync("");
+                        var res = await HttpUtil.GetHtmlAsync("validateCaptcha?amzn=Rth+q2/q0PFHYp/Rpg?th=1&psc=1&field-keywords=" + captcha);
+                        return EnumCheckCaptcha.OK;
                     }
                 }
+                return EnumCheckCaptcha.None;
             }
             catch (Exception ex)
             {
+                return EnumCheckCaptcha.No;
             }
+        }
+
+        public enum EnumCheckCaptcha
+        {
+            None,
+            OK,
+            No,
         }
     }
 }
