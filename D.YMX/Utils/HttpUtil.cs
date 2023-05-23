@@ -40,7 +40,7 @@ namespace D.YMX.Utils
         public static Dictionary<string, CookieContainer> CookiesContainer { get; set; }
 
         //API链接  在后台获取
-        const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=false&norepeat=false&detail=false&ltime=&idshow=false";
+        const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=true&norepeat=true&detail=false&ltime=&idshow=false";
         //后台用户名
         public const string proxyusernm = "15680505585";
         //后台密码
@@ -151,13 +151,24 @@ namespace D.YMX.Utils
                 //    myResponseStream.Close();
                 //    return retString;
                 //}
+                errorCount = 0;
                 return response;
             }
             catch (Exception ex)
             {
-                return null;
+                errorCount++;
+                if (errorCount < 20)
+                {
+                    return await GetHtmlAsync(url, openProxy);
+                }
+                else
+                {
+                    errorCount = 0;
+                    return null;
+                }
             }
         }
+        private static int errorCount = 0;
 
         public static string Generate(string hostname, int port)
         {
