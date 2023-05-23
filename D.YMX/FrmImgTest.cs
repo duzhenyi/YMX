@@ -116,6 +116,12 @@ namespace D.YMX
             sw.Close();
         }
 
+
+        /// <summary>
+        /// 图片灰度
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnGray_Click(object sender, EventArgs e)
         {
             // 图片灰度
@@ -126,6 +132,11 @@ namespace D.YMX
             }
         }
 
+        /// <summary>
+        /// 图片二值化
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button3_Click(object sender, EventArgs e)
         {
             // 图片二值化
@@ -135,7 +146,11 @@ namespace D.YMX
                 pictureBox3.Image = ImgUtil.ConvertToBinaryImage(bmp);
             }
         }
-
+        /// <summary>
+        /// 图片切片
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button2_Click(object sender, EventArgs e)
         {
             // 图片切片
@@ -156,6 +171,11 @@ namespace D.YMX
             }
         }
 
+        /// <summary>
+        /// 字符扫描
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button4_Click(object sender, EventArgs e)
         {
             Bitmap bmp = pictureBox1.Image as Bitmap;
@@ -372,6 +392,11 @@ namespace D.YMX
             }
         }
 
+        /// <summary>
+        /// 解析HTML的商品详情
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button5_Click(object sender, EventArgs e)
         {
             var countryEntity = new CountryEntity()
@@ -383,6 +408,11 @@ namespace D.YMX
             var res = countryEntity.Instance().GetDetail(detailHtml);
         }
 
+        /// <summary>
+        /// 原始图
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void button6_Click(object sender, EventArgs e)
         {
             OpenFileDialog fileDialog = new OpenFileDialog();

@@ -40,11 +40,11 @@ namespace D.YMX.Utils
         public static Dictionary<string, CookieContainer> CookiesContainer { get; set; }
 
         //API链接  在后台获取
-        const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=true&norepeat=true&detail=false&ltime=&idshow=false";
+        const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=false&norepeat=false&detail=false&ltime=&idshow=false";
         //后台用户名
         public const string proxyusernm = "15680505585";
         //后台密码
-        public const string proxypasswd = "15680505585";
+        public const string proxypasswd = "*15680505585*";
         public static Proxy GetProxyIp()
         {
             WebClient wc = new WebClient();
@@ -92,64 +92,71 @@ namespace D.YMX.Utils
 
         public static async Task<string> GetHtmlAsync(string url, bool openProxy = false)
         {
-            //var fingerprint = Generate("www.amazon.com", 443);
-
-            var handler = new HttpClientHandler()
+            try
             {
-                ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true,
-                MaxConnectionsPerServer = int.MaxValue,
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-                SslProtocols = System.Security.Authentication.SslProtocols.Tls |
-                               System.Security.Authentication.SslProtocols.Tls11 |
-                               System.Security.Authentication.SslProtocols.Tls12 |
-                               System.Security.Authentication.SslProtocols.Tls13,
-                //ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+                //var fingerprint = Generate("www.amazon.com", 443);
+
+                var handler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, error) => true,
+                    MaxConnectionsPerServer = int.MaxValue,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                    SslProtocols = System.Security.Authentication.SslProtocols.Tls |
+                                   System.Security.Authentication.SslProtocols.Tls11 |
+                                   System.Security.Authentication.SslProtocols.Tls12 |
+                                   System.Security.Authentication.SslProtocols.Tls13,
+                    //ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) =>
+                    //{
+                    //    // 检查证书指纹是否匹配
+                    //    var actualFingerprint = cert.GetCertHashString();
+                    //    if (fingerprint.Equals(actualFingerprint, StringComparison.OrdinalIgnoreCase))
+                    //    {
+                    //        return true;
+                    //    }
+                    //    else
+                    //    {
+                    //        return false;
+                    //    }
+                    //}
+                    // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
+                    //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                };
+
+                if (openProxy)
+                {
+                    Proxy p = GetProxyIp();
+
+                    handler.UseProxy = true;
+                    handler.Proxy = new WebProxy(p.ip, p.port);
+                    handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+                }
+
+                var client = new HttpClient(handler);
+                client.Timeout = TimeSpan.FromSeconds(60);
+                client.DefaultRequestVersion = new Version(2, 0);
+
+                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"));//"text/html;charset=UTF-8";
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64");
+                client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
+                client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
+
+                var response = await client.GetStringAsync(url);
+
+                //if (response.StatusCode == HttpStatusCode.OK)
                 //{
-                //    // 检查证书指纹是否匹配
-                //    var actualFingerprint = cert.GetCertHashString();
-                //    if (fingerprint.Equals(actualFingerprint, StringComparison.OrdinalIgnoreCase))
-                //    {
-                //        return true;
-                //    }
-                //    else
-                //    {
-                //        return false;
-                //    }
+                //    Stream myResponseStream = await response.Content.ReadAsStreamAsync();
+                //    StreamReader myStreamReader = new StreamReader(myResponseStream);
+                //    string retString = await myStreamReader.ReadToEndAsync();
+                //    myStreamReader.Close();
+                //    myResponseStream.Close();
+                //    return retString;
                 //}
-                // 因为我们再上面把证书添加到本机受信任了 所以这行代码不需要，如果你不操作受信任证书的话，就需要
-                //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-            };
-
-            if (openProxy)
-            {
-                Proxy p = GetProxyIp();
-
-                handler.UseProxy = true;
-                handler.Proxy = new WebProxy(p.ip, p.port);
-                handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+                return response;
             }
-
-            var client = new HttpClient(handler);
-            client.Timeout = TimeSpan.FromSeconds(60);
-            client.DefaultRequestVersion = new Version(2, 0);
-
-            //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7"));//"text/html;charset=UTF-8";
-            client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36 Edg/112.0.1722.64");
-            client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
-            client.DefaultRequestHeaders.AcceptLanguage.ParseAdd("zh-CN,zh;q=0.9,en;q=0.8,en-GB;q=0.7,en-US;q=0.6");
-
-            var response = await client.GetStringAsync(url);
-
-            //if (response.StatusCode == HttpStatusCode.OK)
-            //{
-            //    Stream myResponseStream = await response.Content.ReadAsStreamAsync();
-            //    StreamReader myStreamReader = new StreamReader(myResponseStream);
-            //    string retString = await myStreamReader.ReadToEndAsync();
-            //    myStreamReader.Close();
-            //    myResponseStream.Close();
-            //    return retString;
-            //}
-            return response;
+            catch (Exception ex)
+            {
+                return null;
+            }
         }
 
         public static string Generate(string hostname, int port)

@@ -380,11 +380,6 @@ namespace D.YMX
 
             }
 
-            //if (this.checkBoxOpenAuth.Checked)
-            //{
-            //    MessageBox.Show("验证开启时请先获取Cookie!"); return;
-            //}
-
             this.btnStart.Enabled = false;
             this.btnStop.Enabled = true;
 
@@ -396,7 +391,10 @@ namespace D.YMX
 
             // 获取最大页数量
             var total = await ApiUtil.GetTotalAsync(yaMaXunCountry, keyWrods);
-
+            if (total == 0)
+            {
+                MessageBox.Show("最大页数量为0"); return;
+            }
             // 列表页面的Asin
             var asins = new List<string>();
             for (int i = 0; i < total; i++)
@@ -407,7 +405,10 @@ namespace D.YMX
                     asins.AddRange(res);
                 }
             }
-
+            if (asins.Count == 0)
+            {
+                MessageBox.Show("列表页面的Asin为0"); return;
+            }
             // 获取所有商品的Asins
             List<string> allAsins = new List<string>();
             List<Task<List<string>>> tasks = new List<Task<List<string>>>();

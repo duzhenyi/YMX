@@ -25,6 +25,7 @@ namespace D.YMX.Utils
                 var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
+                    await CheckCacptImg(res, countryEntity);
                     // 解析Html
                     HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
                     doc.LoadHtml(res);
@@ -53,7 +54,10 @@ namespace D.YMX.Utils
 
                 // 2. 获取分页的搜索产品
                 var res = await HttpUtil.GetHtmlAsync(url, true);
-
+                if (!string.IsNullOrEmpty(res))
+                {
+                    await CheckCacptImg(res, countryEntity);
+                }
                 // 3. 解析Html
                 HtmlAgilityPack.HtmlDocument doc = new HtmlAgilityPack.HtmlDocument();
                 doc.LoadHtml(res);
@@ -89,25 +93,7 @@ namespace D.YMX.Utils
                 var res = await HttpUtil.GetHtmlAsync(url, true);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    if (res.Contains("Enter the characters you see below"))
-                    {// 需要输入验证码，重新请求
-
-                        // 获取验证码  url = validateCaptcha?amzn=Rth+q2/q0PFHYp/RpglARg==&amzn-r=/dp/B0BWZW448X?th=1&psc=1&field-keywords=验证码
-                        var captchaImgUrl = countryEntity.Instance().GetCaptcha(res);
-                        // 存储到本地
-                        var localCaptchaImgUrl = ImgUtil.GetCaptchaImage(captchaImgUrl);
-                        // 图片切分
-
-                        // 图片二值化
-                        //Bitmap bitmap = new Bitmap(localCaptchaImgUrl);
-                        //if (bitmap != null)
-                        //{
-                             
-                        //}
-                        // 根据字模，算出跟哪个最相近
-
-                        return await GetAllAsins(countryEntity, asin);
-                    }
+                    await CheckCacptImg(res, countryEntity);
                     return countryEntity.Instance().GetAllAsins(res);
                 }
             }
@@ -136,6 +122,7 @@ namespace D.YMX.Utils
 
                 if (!string.IsNullOrEmpty(res))
                 {
+                    await CheckCacptImg(res, countryEntity);
                     // 3. 解析Html
                     return countryEntity.Instance().GetDetail(res);
                 }
@@ -145,6 +132,37 @@ namespace D.YMX.Utils
                 return null;
             }
             return null;
+        }
+
+        /// <summary>
+        /// 人机验证码
+        /// </summary>
+        /// <param name="html"></param>
+        /// <param name="countryEntity"></param>
+        /// <returns></returns>
+        private static async Task CheckCacptImg(string html, CountryEntity countryEntity)
+        {
+            try
+            {
+                if (html.Contains("Enter the characters you see below"))
+                {// 需要输入验证码，重新请求
+
+                    // 获取验证码  url = validateCaptcha?amzn=Rth+q2/q0PFHYp/RpglARg==&amzn-r=/dp/B0BWZW448X?th=1&psc=1&field-keywords=验证码
+                    var captchaImgUrl = countryEntity.Instance().GetCaptcha(html);
+                    // 存储到本地
+                    var localCaptchaImgUrl = ImgUtil.SaveCaptchaImage(captchaImgUrl);
+                    // 根据字模，算出跟哪个最相近
+                    var captcha = ImgUtil.GetCaptchaImage(captchaImgUrl);
+
+                    if (!string.IsNullOrEmpty(captcha))
+                    {
+                        await HttpUtil.GetHtmlAsync("");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+            }
         }
     }
 }

@@ -1,7 +1,9 @@
 ﻿using D.YMX.Models;
 using System.Collections;
+using System.Diagnostics;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Net;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
@@ -121,7 +123,7 @@ namespace D.YMX.Utils
     {
         #region 根据远程图片Url下载到本地
 
-        public static string GetCaptchaImage(string imgUrl)
+        public static string SaveCaptchaImage(string imgUrl)
         {
             string pathFile = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Uploads/Captcha/";
 
@@ -509,6 +511,111 @@ namespace D.YMX.Utils
         }
         #endregion
 
+
+        private static string[] files = null;
+        /// <summary>
+        /// 直接调用的匹配
+        /// </summary>
+        /// <param name="imgPath">单个验证码路径</param>
+        /// <returns></returns>
+        public static string GetCaptchaImage(string imgPath)
+        {
+            if (files == null)
+            {
+                // 1. 加载字模
+                StreamReader sr = null;
+                try
+                {
+                    string filePath = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Uploads/Captcha/template.txt";
+                    sr = new StreamReader(filePath);
+                    var str = sr.ReadToEnd();
+                    files = str.Split(")");
+                }
+                catch (Exception ex)
+                {
+
+                }
+                finally
+                {
+                    sr.Dispose();
+                }
+            }
+
+            // 2. 灰度，二值化，切割图片
+            using (var bitMap = new Bitmap(imgPath))
+            {
+                var garyImg = ImgUtil.ToGray(bitMap);
+                var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
+                var imgs = ImgUtil.Cut(img2);
+                var codeList = new List<string>();
+                for (int i = 0; i < imgs.Count; i++)
+                {
+                    var code = ImgUtil.ScanImageUlong(imgs[i]);
+                    codeList.Add(code);
+                }
+
+
+                var result = string.Empty;
+                // 3. 匹配
+                for (int z = 0; z < codeList.Count; z++)
+                {
+
+                    // 分割后的字符
+                    string[] strs = codeList[z].Split(',');
+
+                    //  图片中的字符
+                    int len = int.Parse(strs[0]);
+
+                    // 3. 字符扫描的结果
+                    string[] code = new string[len];
+                    for (int i = 0; i < len; i++)
+                    {
+                        code[i] = strs[i + 1];
+                    }
+
+                    foreach (var file in files)
+                    {
+                        var lineText = file.Replace("\r", "").Replace("\n", "");
+                        if (lineText == "")
+                        {
+                            continue;
+                        }
+                        // 分割后的字符
+                        string[] templates = lineText.Split(':');
+
+                        // 1. 图片中的字符,字母名称
+                        string templateCharacter = templates[0];
+
+                        // 后面的多个字符
+                        var cahrts = templates[1].Split("|");
+
+                        foreach (var chart in cahrts)
+                        {
+                            var charts2 = chart.Split(',');
+                            // 2. 字符的宽度
+                            int templateLen = int.Parse(charts2[0]);
+
+                            // 3. 字符扫描的结果
+                            string[] templateCode = new string[templateLen];
+                            for (int i = 0; i < templateLen; i++)
+                            {
+                                templateCode[i] = charts2[i + 1];
+                            }
+
+                            // 进行字模比对
+                            var matchRate = ImgUtil.CompareArr(templateCode, code);
+                            Trace.WriteLine(templateCharacter + ":" + matchRate);
+                            if (matchRate > 0.7)
+                            {
+                                result += templateCharacter;
+                            }
+                        }
+                    }
+                }
+
+                return result;
+            }
+        }
         #endregion 
     }
 }
