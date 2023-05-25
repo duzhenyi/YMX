@@ -51,7 +51,7 @@ namespace D.YMX.Utils
         public static Proxy GetProxyIp()
         {
             WebClient wc = new WebClient();
-            string body = wc.DownloadString(AppconfigUtil.ProxyUtil.ProxyUrl);
+            string body = wc.DownloadString(JsonConfigUtil.ProxyUtil.ProxyUrl);
             MemoryStream memoryStream = new MemoryStream();
             StreamWriter writer = new StreamWriter(memoryStream);
             writer.Write(body);
@@ -77,12 +77,12 @@ namespace D.YMX.Utils
 
             HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(imgUrl);
 
-            if (AppconfigUtil.ProxyUtil != null && openProxy)
+            if (JsonConfigUtil.ProxyUtil != null && openProxy)
             {
 
                 Proxy p = HttpUtil.GetProxyIp();
                 myReq.Proxy = new WebProxy(p.ip, p.port);
-                myReq.Proxy.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
+                myReq.Proxy.Credentials = new NetworkCredential(JsonConfigUtil.ProxyUtil.Account, JsonConfigUtil.ProxyUtil.Pwd);
             }
 
             WebResponse myResp = myReq.GetResponse();
@@ -129,13 +129,13 @@ namespace D.YMX.Utils
                     //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
 
-                if (openProxy && AppconfigUtil.ProxyUtil != null)
+                if (openProxy && JsonConfigUtil.ProxyUtil != null)
                 {
                     Proxy p = GetProxyIp();
 
                     handler.UseProxy = true;
                     handler.Proxy = new WebProxy(p.ip, p.port);
-                    handler.Proxy.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
+                    handler.Proxy.Credentials = new NetworkCredential(JsonConfigUtil.ProxyUtil.Account, JsonConfigUtil.ProxyUtil.Pwd);
                 }
 
                 var client = new HttpClient(handler);
@@ -284,11 +284,11 @@ namespace D.YMX.Utils
                     request.Timeout = 5000;//定义请求超时时间为5秒
                     request.KeepAlive = true;//启用长连接
                     request.Method = "GET";//定义请求方式为GET              
-                    if (openProxy && AppconfigUtil.ProxyUtil != null)
+                    if (openProxy && JsonConfigUtil.ProxyUtil != null)
                     {
                         Proxy p = GetProxyIp();
                         var px = new WebProxy(p.ip, p.port);//设置代理服务器IP，伪装请求地址
-                        px.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
+                        px.Credentials = new NetworkCredential(JsonConfigUtil.ProxyUtil.Account, JsonConfigUtil.ProxyUtil.Pwd);
                         request.Proxy = px;
                     }
                     request.CookieContainer = CookiesContainer[domain];//附加Cookie容器

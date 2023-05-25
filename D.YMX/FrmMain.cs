@@ -4,6 +4,7 @@ using D.YMX.Properties;
 using D.YMX.Utils;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -271,7 +272,7 @@ namespace D.YMX
         public FrmMain()
         {
             InitializeComponent();
-
+             
             this.MaximizedBounds = Screen.PrimaryScreen.WorkingArea;
             // 设置无边框模式
             this.Text = string.Empty;
@@ -407,7 +408,7 @@ namespace D.YMX
             }
 
             var openProxy = this.checkBoxProxy.Checked;
-            if (openProxy && AppconfigUtil.ProxyUtil == null)
+            if (openProxy && JsonConfigUtil.ProxyUtil == null)
             {
                 MessageBox.Show("代理IP配置异常"); return;
             }

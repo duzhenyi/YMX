@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace D.YMX.Utils
 {
-    public static class AppconfigUtil
+    public static class JsonConfigUtil
     {
         public static ProxyConfig ProxyUtil { get; set; } = null;
     }

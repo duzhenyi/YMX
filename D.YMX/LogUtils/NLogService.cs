@@ -31,7 +31,7 @@ namespace D.YMX.LogUtils
         /// </summary>
         /// <param name="message"></param>
         public void Error(object message)
-        {
+         {
             if (logger.IsErrorEnabled)
             {
                 logger.Error(message);
