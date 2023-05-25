@@ -1,10 +1,13 @@
-﻿using D.YMX.Models;
+﻿using D.YMX.LogUtils;
+using D.YMX.Models;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1.Ocsp;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Tls;
 using Org.BouncyCastle.Security;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -39,16 +42,16 @@ namespace D.YMX.Utils
         /// </summary>
         public static Dictionary<string, CookieContainer> CookiesContainer { get; set; }
 
-        //API链接  在后台获取
-        const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=true&norepeat=true&detail=false&ltime=&idshow=false";
-        //后台用户名
-        public const string proxyusernm = "15680505585";
-        //后台密码
-        public const string proxypasswd = "*15680505585*";
+        ////API链接  在后台获取
+        //const string proxyAPI = "http://15680505585.user.xiecaiyun.com/api/proxies?action=getJSON&key=NP77DDD613&count=&word=&rand=true&norepeat=true&detail=false&ltime=&idshow=false";
+        ////后台用户名
+        //public const string proxyusernm = "15680505585";
+        ////后台密码
+        //public const string proxypasswd = "*15680505585*";
         public static Proxy GetProxyIp()
         {
             WebClient wc = new WebClient();
-            string body = wc.DownloadString(proxyAPI);
+            string body = wc.DownloadString(AppconfigUtil.ProxyUtil.ProxyUrl);
             MemoryStream memoryStream = new MemoryStream();
             StreamWriter writer = new StreamWriter(memoryStream);
             writer.Write(body);
@@ -68,15 +71,19 @@ namespace D.YMX.Utils
         }
 
 
-        public static byte[] GetBytesFromUrl(string url)
+        public static byte[] GetBytesFromUrl(string imgUrl, bool openProxy = false)
         {
             byte[] b;
-            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(url);
 
-            Proxy p = HttpUtil.GetProxyIp();
-            myReq.Proxy = new WebProxy(p.ip, p.port);
-            myReq.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+            HttpWebRequest myReq = (HttpWebRequest)WebRequest.Create(imgUrl);
 
+            if (AppconfigUtil.ProxyUtil != null && openProxy)
+            {
+
+                Proxy p = HttpUtil.GetProxyIp();
+                myReq.Proxy = new WebProxy(p.ip, p.port);
+                myReq.Proxy.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
+            }
 
             WebResponse myResp = myReq.GetResponse();
 
@@ -122,13 +129,13 @@ namespace D.YMX.Utils
                     //ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
                 };
 
-                if (openProxy)
+                if (openProxy && AppconfigUtil.ProxyUtil != null)
                 {
                     Proxy p = GetProxyIp();
 
                     handler.UseProxy = true;
                     handler.Proxy = new WebProxy(p.ip, p.port);
-                    handler.Proxy.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+                    handler.Proxy.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
                 }
 
                 var client = new HttpClient(handler);
@@ -157,12 +164,13 @@ namespace D.YMX.Utils
             catch (Exception ex)
             {
                 errorCount++;
-                if (errorCount < 20)
+                if (errorCount < 10)
                 {
                     return await GetHtmlAsync(url, openProxy);
                 }
                 else
                 {
+                    NLogUtil.Log.Error(ex);
                     errorCount = 0;
                     return null;
                 }
@@ -276,11 +284,11 @@ namespace D.YMX.Utils
                     request.Timeout = 5000;//定义请求超时时间为5秒
                     request.KeepAlive = true;//启用长连接
                     request.Method = "GET";//定义请求方式为GET              
-                    if (openProxy)
+                    if (openProxy && AppconfigUtil.ProxyUtil != null)
                     {
                         Proxy p = GetProxyIp();
                         var px = new WebProxy(p.ip, p.port);//设置代理服务器IP，伪装请求地址
-                        px.Credentials = new NetworkCredential(proxyusernm, proxypasswd);
+                        px.Credentials = new NetworkCredential(AppconfigUtil.ProxyUtil.Account, AppconfigUtil.ProxyUtil.Pwd);
                         request.Proxy = px;
                     }
                     request.CookieContainer = CookiesContainer[domain];//附加Cookie容器

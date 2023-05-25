@@ -1,4 +1,5 @@
-﻿using D.YMX.Models;
+﻿using D.YMX.LogUtils;
+using D.YMX.Models;
 using System.Collections;
 using System.Diagnostics;
 using System.Drawing.Drawing2D;
@@ -123,7 +124,7 @@ namespace D.YMX.Utils
     {
         #region 根据远程图片Url下载到本地
 
-        public static string SaveCaptchaImage(string imgUrl)
+        public static string SaveCaptchaImage(string imgUrl, bool openProxy = false)
         {
             string pathFile = AppDomain.CurrentDomain.SetupInformation.ApplicationBase + "Uploads/Captcha/";
 
@@ -133,7 +134,7 @@ namespace D.YMX.Utils
                 Directory.CreateDirectory(pathFile);
             }
             pathFile += $@"{DateTime.Now.ToString("yyyyMMddHHmmssfff")}.jpg";
-            WriteBytesToFile(pathFile, HttpUtil.GetBytesFromUrl(imgUrl));
+            WriteBytesToFile(pathFile, HttpUtil.GetBytesFromUrl(imgUrl,openProxy));
             return pathFile;
         }
 
@@ -533,7 +534,7 @@ namespace D.YMX.Utils
                 }
                 catch (Exception ex)
                 {
-
+                    NLogUtil.Log.Error(ex);
                 }
                 finally
                 {

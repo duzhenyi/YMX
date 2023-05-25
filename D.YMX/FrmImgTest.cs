@@ -24,8 +24,8 @@ namespace D.YMX
         public FrmImgTest()
         {
             InitializeComponent();
-            var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha";
-            this.pictureBox1.Image = new Bitmap(path + "\\" + "AEJXLE.jpg");
+            //var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha";
+            //this.pictureBox1.Image = new Bitmap(path + "\\" + "AEJXLE.jpg");
         }
 
         private static Dictionary<string, List<string>> dic = new Dictionary<string, List<string>>();

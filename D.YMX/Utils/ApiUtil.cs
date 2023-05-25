@@ -1,4 +1,5 @@
-﻿using D.YMX.Models;
+﻿using D.YMX.LogUtils;
+using D.YMX.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,17 +17,17 @@ namespace D.YMX.Utils
         /// 获取总页数
         /// </summary>
         /// <returns></returns>
-        public static async Task<int> GetTotalAsync(CountryEntity countryEntity, string keyWords)
+        public static async Task<int> GetTotalAsync(CountryEntity countryEntity, string keyWords, bool openProxy = false)
         {
             try
             {
                 // 1. 拼接搜索页面
                 var url = countryEntity.KeywordsUrl.Replace("{QID}", DateTime.Now.Ticks.ToString()).Replace("{KEY_WORDS}", HttpUtility.UrlEncode(keyWords)).Replace("{PAGE}", "1");
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(url, true);
+                var res = await HttpUtil.GetHtmlAsync(url, openProxy);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity, openProxy);
                     if (checkRes == EnumCheckCaptcha.OK)
                     {
                         return await GetTotalAsync(countryEntity, keyWords);
@@ -45,6 +46,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
+                NLogUtil.Log.Error(ex);
                 return 0;
             }
             return 0;
@@ -55,7 +57,7 @@ namespace D.YMX.Utils
         /// </summary>
         /// <param name="countryEntity"></param>
         /// <param name="page"></param>
-        public static async Task<List<string>> GetAsinListAsync(CountryEntity countryEntity, string keyWords, string page)
+        public static async Task<List<string>> GetAsinListAsync(CountryEntity countryEntity, string keyWords, string page,bool openProxy=false)
         {
             try
             {
@@ -63,10 +65,10 @@ namespace D.YMX.Utils
                 var url = countryEntity.KeywordsUrl.Replace("{QID}", DateTime.Now.Ticks.ToString()).Replace("{KEY_WORDS}", HttpUtility.UrlEncode(keyWords)).Replace("{PAGE}", page);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(url, true);
+                var res = await HttpUtil.GetHtmlAsync(url, openProxy);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity, openProxy);
                     if (checkRes == EnumCheckCaptcha.OK)
                     {
                         return await GetAsinListAsync(countryEntity, keyWords, page);
@@ -89,6 +91,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
+                NLogUtil.Log.Error(ex);
                 return null;
             }
             return null;
@@ -100,7 +103,7 @@ namespace D.YMX.Utils
         /// <param name="countryEntity"></param>
         /// <param name="asin"></param>
         /// <returns></returns>
-        public static async Task<List<string>> GetAllAsins(CountryEntity countryEntity, string asin)
+        public static async Task<List<string>> GetAllAsins(CountryEntity countryEntity, string asin, bool openProxy = false)
         {
             try
             {
@@ -108,10 +111,10 @@ namespace D.YMX.Utils
                 var url = countryEntity.DetailUrl.Replace("{ASIN}", asin);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(url, true);
+                var res = await HttpUtil.GetHtmlAsync(url, openProxy);
                 if (!string.IsNullOrEmpty(res))
                 {
-                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity, openProxy);
                     if (checkRes == EnumCheckCaptcha.None)
                     {
                         return countryEntity.Instance().GetAllAsins(res);
@@ -128,6 +131,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
+                NLogUtil.Log.Error(ex);
                 return null;
             }
             return null;
@@ -139,7 +143,7 @@ namespace D.YMX.Utils
         /// <param name="countryEntity"></param>
         /// <param name="asin"></param>
         /// <returns></returns>
-        public static async Task<Product> GetDetailAsync(CountryEntity countryEntity, string asin)
+        public static async Task<Product> GetDetailAsync(CountryEntity countryEntity, string asin, bool openProxy = false)
         {
             try
             {
@@ -147,11 +151,11 @@ namespace D.YMX.Utils
                 var url = countryEntity.DetailUrl.Replace("{ASIN}", asin);
 
                 // 2. 获取分页的搜索产品
-                var res = await HttpUtil.GetHtmlAsync(url, true);
+                var res = await HttpUtil.GetHtmlAsync(url, openProxy);
 
                 if (!string.IsNullOrEmpty(res))
                 {
-                    var checkRes = await CheckCacptchImg(res, countryEntity);
+                    var checkRes = await CheckCacptchImg(res, countryEntity, openProxy);
                     if (checkRes == EnumCheckCaptcha.None)
                     {
                         // 3. 解析Html
@@ -169,6 +173,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
+                NLogUtil.Log.Error(ex);
                 return null;
             }
             return null;
@@ -180,7 +185,7 @@ namespace D.YMX.Utils
         /// <param name="html"></param>
         /// <param name="countryEntity"></param>
         /// <returns></returns>
-        private static async Task<EnumCheckCaptcha> CheckCacptchImg(string html, CountryEntity countryEntity)
+        private static async Task<EnumCheckCaptcha> CheckCacptchImg(string html, CountryEntity countryEntity, bool openProxy = false)
         {
             try
             {
@@ -190,13 +195,13 @@ namespace D.YMX.Utils
                     // 获取验证码  url = validateCaptcha?amzn=Rth+q2/q0PFHYp/RpglARg==&amzn-r=/dp/B0BWZW448X?th=1&psc=1&field-keywords=验证码
                     var captchaImgUrl = countryEntity.Instance().GetCaptcha(html);
                     // 存储到本地
-                    var localCaptchaImgUrl = ImgUtil.SaveCaptchaImage(captchaImgUrl);
+                    var localCaptchaImgUrl = ImgUtil.SaveCaptchaImage(captchaImgUrl,openProxy);
                     // 根据字模，算出跟哪个最相近
                     var captcha = ImgUtil.GetCaptchaImage(captchaImgUrl);
 
                     if (!string.IsNullOrEmpty(captcha))
                     {
-                        var res = await HttpUtil.GetHtmlAsync("validateCaptcha?amzn=Rth+q2/q0PFHYp/Rpg?th=1&psc=1&field-keywords=" + captcha);
+                        var res = await HttpUtil.GetHtmlAsync("validateCaptcha?amzn=Rth+q2/q0PFHYp/Rpg?th=1&psc=1&field-keywords=" + captcha, openProxy);
                         return EnumCheckCaptcha.OK;
                     }
                 }
@@ -204,6 +209,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
+                NLogUtil.Log.Error(ex);
                 return EnumCheckCaptcha.No;
             }
         }

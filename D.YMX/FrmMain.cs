@@ -1,8 +1,10 @@
-﻿using D.YMX.Models;
+﻿using D.YMX.LogUtils;
+using D.YMX.Models;
 using D.YMX.Properties;
 using D.YMX.Utils;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -344,6 +346,31 @@ namespace D.YMX
             new Tuple<string, string>("BSR","BSR"),
             new Tuple<string, string>("上架时间","ListingTime"),
 
+            new Tuple<string, string>("产品尺寸","ProductDimensions"),
+            new Tuple<string, string>("风格","Style"),
+            new Tuple<string, string>("特殊功能","SpecialFeature"),
+            new Tuple<string, string>("布料","Material"),
+            new Tuple<string, string>("产品推荐用途","RecommendedUsesForProduct"),
+            new Tuple<string, string>("饰面类型","FinishType"),
+            new Tuple<string, string>("房间类型","RoomType"),
+            new Tuple<string, string>("summary","FrameMaterial"),
+            new Tuple<string, string>("年龄范围","AgeRangeDescription"),
+            new Tuple<string, string>("背面样式","BackStyle"),
+            new Tuple<string, string>("单位计数","UnitCount"),
+            new Tuple<string, string>("项目重量","ItemWeight"),
+            new Tuple<string, string>("护理说明","CareInstructions"),
+            new Tuple<string, string>("最大推荐负载","MaximumRecommendedLoad"),
+            new Tuple<string, string>("阀座材料类型","SeatMaterialType"),
+            new Tuple<string, string>("部门","Department"),
+            new Tuple<string, string>("制造商","Manufacturer"),
+            new Tuple<string, string>("原产国","CountryOfOrigin"),
+            new Tuple<string, string>("项目型号","ItemModelNumber"),
+            new Tuple<string, string>("客户评论","CustomerReviews"),
+            new Tuple<string, string>("畅销排行榜","BestSellersRank"),
+            new Tuple<string, string>("体积","Volume"),
+            new Tuple<string, string>("外形尺寸","FormFactor"),
+            new Tuple<string, string>("饰面类型","FinishTypes"),
+            new Tuple<string, string>("所需电池","Batteries"),
         };
         #endregion
 
@@ -377,7 +404,12 @@ namespace D.YMX
             if (string.IsNullOrEmpty(this.cboProdKeyWords.Text))
             {
                 MessageBox.Show("请输入产品关键词"); return;
+            }
 
+            var openProxy = this.checkBoxProxy.Checked;
+            if (openProxy && AppconfigUtil.ProxyUtil == null)
+            {
+                MessageBox.Show("代理IP配置异常"); return;
             }
 
             this.btnStart.Enabled = false;
@@ -390,7 +422,7 @@ namespace D.YMX
             var keyWrods = this.cboProdKeyWords.Text;
 
             // 获取最大页数量
-            var total = await ApiUtil.GetTotalAsync(yaMaXunCountry, keyWrods);
+            var total = await ApiUtil.GetTotalAsync(yaMaXunCountry, keyWrods, openProxy);
             if (total == 0)
             {
                 MessageBox.Show("最大页数量为0"); return;
@@ -399,7 +431,7 @@ namespace D.YMX
             var asins = new List<string>();
             for (int i = 0; i < total; i++)
             {
-                var res = await ApiUtil.GetAsinListAsync(yaMaXunCountry, keyWrods, (i + 1).ToString());
+                var res = await ApiUtil.GetAsinListAsync(yaMaXunCountry, keyWrods, (i + 1).ToString(), openProxy);
                 if (res != null)
                 {
                     asins.AddRange(res);
@@ -417,7 +449,7 @@ namespace D.YMX
                 //var asin = asins[i];
                 //tasks.Add(ApiUtil.GetAllAsins(yaMaXunCountry, asin));
 
-                var colorAsins = await ApiUtil.GetAllAsins(yaMaXunCountry, asins[i]);
+                var colorAsins = await ApiUtil.GetAllAsins(yaMaXunCountry, asins[i], openProxy);
                 if (colorAsins != null)
                 {
                     allAsins.AddRange(colorAsins);
@@ -434,7 +466,7 @@ namespace D.YMX
             var list = new List<Product>();
             foreach (var asin in allAsins)
             {
-                var product = await ApiUtil.GetDetailAsync(yaMaXunCountry, asin);
+                var product = await ApiUtil.GetDetailAsync(yaMaXunCountry, asin, openProxy);
                 if (product != null)
                 {
                     product.Asin = asin;
@@ -500,7 +532,7 @@ namespace D.YMX
 
         #region 结果筛选
 
-        #endregion 
+        #endregion
 
         #region 数据导出CSV
         /// <summary>
