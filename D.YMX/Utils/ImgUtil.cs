@@ -329,13 +329,13 @@ namespace D.YMX.Utils
         {
             List<int> list = new List<int>();
 
-            for (int x = 0; x < bmp.Width; x++) //200
+            for (int x = 0; x < bmp.Width; x++) 
             {
-                for (int y = 0; y < bmp.Height; y++) //50
+                for (int y = 0; y < bmp.Height; y++) 
                 {
                     if (bmp.GetPixel(x, y).R == 0)
                     {
-                        if (!list.Contains(x)) // occur for the first time
+                        if (!list.Contains(x)) 
                             list.Add(x);
                     }
                 }

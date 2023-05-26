@@ -67,6 +67,7 @@ namespace D.YMX.Utils
             {
                 return po.result[0];
             }
+            NLogUtil.Log.Error("【GetProxyIp函数异常】获取代理IP失败");
             throw new Exception("获取代理IP失败");
         }
 
@@ -170,7 +171,7 @@ namespace D.YMX.Utils
                 }
                 else
                 {
-                    NLogUtil.Log.Error(ex);
+                    NLogUtil.Log.Error($"【GetHtmlAsync函数异常{url}】" + ex);
                     errorCount = 0;
                     return null;
                 }

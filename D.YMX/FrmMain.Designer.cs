@@ -108,6 +108,8 @@ namespace D.YMX
             btnMin = new Button();
             btnClose = new Button();
             btnMax = new Button();
+            tabLog = new TabPage();
+            txtLogs = new RichTextBox();
             tabContent.SuspendLayout();
             tabKeywords.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvKeyWordsProduct).BeginInit();
@@ -130,6 +132,7 @@ namespace D.YMX
             groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResult).BeginInit();
             panleTop.SuspendLayout();
+            tabLog.SuspendLayout();
             SuspendLayout();
             // 
             // tabContent
@@ -140,6 +143,7 @@ namespace D.YMX
             tabContent.Controls.Add(tabShop);
             tabContent.Controls.Add(tabLinkUrl);
             tabContent.Controls.Add(tabResult);
+            tabContent.Controls.Add(tabLog);
             tabContent.Location = new Point(4, 51);
             tabContent.Margin = new Padding(2, 3, 2, 3);
             tabContent.Name = "tabContent";
@@ -1034,6 +1038,29 @@ namespace D.YMX
             btnMax.UseVisualStyleBackColor = false;
             btnMax.Click += btnMax_Click;
             // 
+            // tabLog
+            // 
+            tabLog.Controls.Add(txtLogs);
+            tabLog.Location = new Point(4, 33);
+            tabLog.Name = "tabLog";
+            tabLog.Padding = new Padding(3);
+            tabLog.Size = new Size(2295, 1260);
+            tabLog.TabIndex = 5;
+            tabLog.Text = "系统日志";
+            tabLog.UseVisualStyleBackColor = true;
+            // 
+            // txtLogs
+            // 
+            txtLogs.BackColor = Color.AntiqueWhite;
+            txtLogs.BorderStyle = BorderStyle.None;
+            txtLogs.Dock = DockStyle.Fill;
+            txtLogs.Location = new Point(3, 3);
+            txtLogs.Name = "txtLogs";
+            txtLogs.ReadOnly = true;
+            txtLogs.Size = new Size(2289, 1254);
+            txtLogs.TabIndex = 0;
+            txtLogs.Text = "";
+            // 
             // FrmMain
             // 
             AutoScaleDimensions = new SizeF(11F, 24F);
@@ -1077,6 +1104,7 @@ namespace D.YMX
             groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)dgvResult).EndInit();
             panleTop.ResumeLayout(false);
+            tabLog.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1159,5 +1187,7 @@ namespace D.YMX
         private Label label5;
         private NumericUpDown numericUpDown1;
         private Label label4;
+        private TabPage tabLog;
+        private RichTextBox txtLogs;
     }
 }

@@ -33,7 +33,7 @@ namespace D.YMX
         private void btnTest_Click(object sender, EventArgs e)
         {
             // 加载图片包地址 
-            var path = "C:\\Users\\29561\\Desktop\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha";
+            var path = "E:\\DL\\du-ling.2023\\YMX\\D.YMX\\bin\\Debug\\net7.0-windows\\Uploads\\Captcha";
             //C#遍历指定文件夹中的所有文件 
             DirectoryInfo TheFolder = new DirectoryInfo(path);
             //遍历文件夹

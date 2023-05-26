@@ -46,7 +46,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
-                NLogUtil.Log.Error(ex);
+                NLogUtil.Log.Error("【GetTotalAsync函数异常：】" + ex);
                 return 0;
             }
             return 0;
@@ -91,7 +91,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
-                NLogUtil.Log.Error(ex);
+                NLogUtil.Log.Error("【GetAsinListAsync函数异常：】" + ex);
                 return null;
             }
             return null;
@@ -131,7 +131,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
-                NLogUtil.Log.Error(ex);
+                NLogUtil.Log.Error("【GetAllAsins函数异常：】" + ex);
                 return null;
             }
             return null;
@@ -173,7 +173,7 @@ namespace D.YMX.Utils
             }
             catch (Exception ex)
             {
-                NLogUtil.Log.Error(ex);
+                NLogUtil.Log.Error("【GetDetailAsync函数异常：】" + ex);
                 return null;
             }
             return null;
@@ -190,26 +190,30 @@ namespace D.YMX.Utils
             try
             {
                 if (html.Contains("Enter the characters you see below"))
-                {// 需要输入验证码，重新请求
+               {// 需要输入验证码，重新请求
 
                     // 获取验证码  url = validateCaptcha?amzn=Rth+q2/q0PFHYp/RpglARg==&amzn-r=/dp/B0BWZW448X?th=1&psc=1&field-keywords=验证码
                     var captchaImgUrl = countryEntity.Instance().GetCaptcha(html);
                     // 存储到本地
                     var localCaptchaImgUrl = ImgUtil.SaveCaptchaImage(captchaImgUrl,openProxy);
                     // 根据字模，算出跟哪个最相近
-                    var captcha = ImgUtil.GetCaptchaImage(captchaImgUrl);
+                    var captcha = ImgUtil.GetCaptchaImage(localCaptchaImgUrl);
 
                     if (!string.IsNullOrEmpty(captcha))
                     {
-                        var res = await HttpUtil.GetHtmlAsync("validateCaptcha?amzn=Rth+q2/q0PFHYp/Rpg?th=1&psc=1&field-keywords=" + captcha, openProxy);
+                        var res = await HttpUtil.GetHtmlAsync($"{countryEntity.Domain}/validateCaptcha?amzn=Rth+q2/q0PFHYp/Rpg?th=1&psc=1&field-keywords=" + captcha, openProxy);
                         return EnumCheckCaptcha.OK;
+                    }
+                    else
+                    {
+                        NLogUtil.Log.Warn($"没有匹配到人机验证码：{captchaImgUrl},本地地址:{localCaptchaImgUrl}");
                     }
                 }
                 return EnumCheckCaptcha.None;
             }
             catch (Exception ex)
             {
-                NLogUtil.Log.Error(ex);
+                NLogUtil.Log.Error("【CheckCacptchImg函数异常：】" + ex);
                 return EnumCheckCaptcha.No;
             }
         }

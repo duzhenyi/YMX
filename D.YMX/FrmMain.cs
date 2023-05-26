@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -272,7 +273,7 @@ namespace D.YMX
         public FrmMain()
         {
             InitializeComponent();
-             
+
             this.MaximizedBounds = Screen.PrimaryScreen.WorkingArea;
             // 设置无边框模式
             this.Text = string.Empty;
@@ -412,22 +413,27 @@ namespace D.YMX
             {
                 MessageBox.Show("代理IP配置异常"); return;
             }
-
+            this.tabContent.SelectedTab = this.tabContent.TabPages[this.tabContent.TabCount-1];
             this.btnStart.Enabled = false;
             this.btnStop.Enabled = true;
 
             cts = new CancellationTokenSource();
             cancellationToken = cts.Token;
 
+            UILog($"开始采集");
             CountryEntity yaMaXunCountry = YaMaXunUtil.GetCountryCode(this.cboCountry.Text);
             var keyWrods = this.cboProdKeyWords.Text;
 
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             // 获取最大页数量
             var total = await ApiUtil.GetTotalAsync(yaMaXunCountry, keyWrods, openProxy);
+            UILog($"采集到页数为：{total},耗时{FormatLongToTime(sw.ElapsedMilliseconds)}");
             if (total == 0)
             {
-                MessageBox.Show("最大页数量为0"); return;
+                total = 1;
             }
+
             // 列表页面的Asin
             var asins = new List<string>();
             for (int i = 0; i < total; i++)
@@ -438,9 +444,13 @@ namespace D.YMX
                     asins.AddRange(res);
                 }
             }
+
+            UILog($"采集到列表页面的Asin总数为：{asins.Count}，耗时{FormatLongToTime(sw.ElapsedMilliseconds)}");
             if (asins.Count == 0)
             {
-                MessageBox.Show("列表页面的Asin为0"); return;
+                UILog("列表页面的Asin总数为0，爬取结束");
+                sw.Stop();
+                return;
             }
             // 获取所有商品的Asins
             List<string> allAsins = new List<string>();
@@ -463,6 +473,13 @@ namespace D.YMX
 
             //await Task.WhenAll(tasks);
 
+            if (allAsins.Count == 0)
+            {
+                UILog("Asin采集完毕，Asin总数为0，爬取结束"); sw.Stop();
+                return;
+            }
+            UILog($"Asin采集完毕，Asin总数为：{allAsins.Count}，耗时{FormatLongToTime(sw.ElapsedMilliseconds)}");
+            UILog($"开始采集商品详情...");
             // 采集产品详情
             var list = new List<Product>();
             foreach (var asin in allAsins)
@@ -474,11 +491,21 @@ namespace D.YMX
                     list.Add(product);
                 }
             }
-
+            UILog($"采集完毕，总耗时：{FormatLongToTime(sw.ElapsedMilliseconds)}");
             this.dgvKeyWordsProduct.DataSource = list;
             this.btnStart.Enabled = true;
             this.btnStop.Enabled = true;
             this.btnExport.Enabled = true;
+            sw.Stop();
+        }
+
+        private string FormatLongToTime(long totalMilliseconds)
+        {
+            TimeSpan timeSpan = TimeSpan.FromMilliseconds(totalMilliseconds);
+            return string.Format("{0:D2}h:{1:D2}m:{2:D2}s",
+                timeSpan.Hours,
+                timeSpan.Minutes,
+                timeSpan.Seconds);
         }
 
         /// <summary>
@@ -607,5 +634,14 @@ namespace D.YMX
         }
         #endregion
 
+        #region 日志
+        public void UILog(string msg)
+        {
+            this.BeginInvoke(new Action(() =>
+            {
+                this.txtLogs.AppendText(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss") + ":" + msg + "\n");
+            }));
+        }
+        #endregion
     }
 }
