@@ -64,8 +64,8 @@ namespace D.YMX
                 {
                     // 切割图片
                     var garyImg = ImgUtil.ToGray(bitMap);
-                    var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
-                    var list = ImgUtil.Cut(img2);
+                    //var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
+                    var list = ImgUtil.Cut(garyImg);
                     for (int i = 0; i < list.Count; i++)
                     {
                         string codePattern = ImgUtil.ScanImageUlong(list[i]);
@@ -154,7 +154,7 @@ namespace D.YMX
         private void button2_Click(object sender, EventArgs e)
         {
             // 图片切片
-            Bitmap bmp = pictureBox3.Image as Bitmap;
+            Bitmap bmp = pictureBox2.Image as Bitmap;
             if (bmp != null)
             {
                 var list = ImgUtil.Cut(bmp);

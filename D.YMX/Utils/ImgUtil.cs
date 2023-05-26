@@ -546,8 +546,8 @@ namespace D.YMX.Utils
             using (var bitMap = new Bitmap(imgPath))
             {
                 var garyImg = ImgUtil.ToGray(bitMap);
-                var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
-                var imgs = ImgUtil.Cut(img2);
+                //var img2 = ImgUtil.ConvertToBinaryImage(garyImg);
+                var imgs = ImgUtil.Cut(garyImg);
                 var codeList = new List<string>();
                 for (int i = 0; i < imgs.Count; i++)
                 {

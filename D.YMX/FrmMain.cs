@@ -403,6 +403,7 @@ namespace D.YMX
         /// <param name="e"></param>
         private async void btnStart_Click(object sender, EventArgs e)
         {
+            txtLogs.Text = string.Empty;
             if (string.IsNullOrEmpty(this.cboProdKeyWords.Text))
             {
                 MessageBox.Show("请输入产品关键词"); return;
@@ -449,6 +450,8 @@ namespace D.YMX
             if (asins.Count == 0)
             {
                 UILog("列表页面的Asin总数为0，爬取结束");
+                this.btnStart.Enabled = true;
+                this.btnStop.Enabled = false;
                 sw.Stop();
                 return;
             }
@@ -476,6 +479,8 @@ namespace D.YMX
             if (allAsins.Count == 0)
             {
                 UILog("Asin采集完毕，Asin总数为0，爬取结束"); sw.Stop();
+                this.btnStart.Enabled = true;
+                this.btnStop.Enabled = false;
                 return;
             }
             UILog($"Asin采集完毕，Asin总数为：{allAsins.Count}，耗时{FormatLongToTime(sw.ElapsedMilliseconds)}");
@@ -497,6 +502,7 @@ namespace D.YMX
             this.btnStop.Enabled = true;
             this.btnExport.Enabled = true;
             sw.Stop();
+            this.tabContent.SelectedTab = this.tabContent.TabPages[0];
         }
 
         private string FormatLongToTime(long totalMilliseconds)
@@ -517,8 +523,9 @@ namespace D.YMX
         {
             cts.CancelAfter(3000);
             this.btnStart.Enabled = true;
-            this.btnStop.Enabled = true;
+            this.btnStop.Enabled = false;
             this.btnExport.Enabled = true;
+            UILog($"已停止采集");
         }
 
         /// <summary>

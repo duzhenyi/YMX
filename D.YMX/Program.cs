@@ -40,7 +40,7 @@ namespace D.YMX
                     Pwd = pwd,
                 };
             }
-            Application.Run(new FrmImgTest());
+            Application.Run(new FrmMain());
         }
     }
 }
